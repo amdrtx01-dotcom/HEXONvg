@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="hexon_bg">#FF0B0F1A</color>
+    <color name="hexon_grad_start">#FF7C5CFF</color>
+    <color name="hexon_grad_end">#FF24BDFF</color>
+    <color name="hexon_ic_bg">#FF0B0F1A</color>
+</resources>

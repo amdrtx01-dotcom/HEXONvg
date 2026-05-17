@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    HEXON adaptive icon background.
+
+    A vector drawable rather than a flat shape so we can layer a
+    radial purple glow on top of a deep navy gradient and dust the
+    canvas with faint hexagonal accents in each corner. This gives
+    the launcher icon a sense of depth even before the foreground
+    composition is layered on top.
+
+    The safe zone for adaptive icons is the centre 66dp out of a
+    108dp canvas; all decorative elements stay outside that zone
+    so they aren't clipped by aggressive launcher masks.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="108dp"
+        android:height="108dp"
+        android:viewportWidth="108"
+        android:viewportHeight="108">
+
+    <!-- Base diagonal navy gradient. -->
+    <path android:pathData="M0,0 L108,0 L108,108 L0,108 Z">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="0"   android:startY="0"
+                android:endX="108"   android:endY="108">
+                <item android:offset="0.00" android:color="#FF14193B" />
+                <item android:offset="0.55" android:color="#FF1B2257" />
+                <item android:offset="1.00" android:color="#FF080B1A" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Soft purple radial glow centred slightly above the hex. -->
+    <path android:pathData="M0,0 L108,0 L108,108 L0,108 Z">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="54"  android:centerY="46"
+                android:gradientRadius="64">
+                <item android:offset="0.00" android:color="#557C5CFF" />
+                <item android:offset="0.55" android:color="#1A24BDFF" />
+                <item android:offset="1.00" android:color="#0024BDFF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Decorative hex outlines in the safe zone corners. They sit
+         outside the launcher mask so most devices won't show them,
+         but they add depth on devices that show the full square. -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#1AFFFFFF"
+        android:strokeWidth="0.8"
+        android:pathData="M16,16 L26,21 L26,31 L16,36 L6,31 L6,21 Z" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#1AFFFFFF"
+        android:strokeWidth="0.8"
+        android:pathData="M92,72 L102,77 L102,87 L92,92 L82,87 L82,77 Z" />
+</vector>

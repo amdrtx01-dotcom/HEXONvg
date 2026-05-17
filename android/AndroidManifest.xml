@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.hexon.beta"
+          android:versionCode="1"
+          android:versionName="BETA">
+
+    <uses-sdk android:minSdkVersion="21"
+              android:targetSdkVersion="34" />
+
+    <!-- Only used if the game ever needs to fetch from the network.
+         file:///android_asset works without any permission. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Profile persistence across reinstalls. On Android 10 and older we
+         request READ/WRITE_EXTERNAL_STORAGE; on Android 11+ we need
+         MANAGE_EXTERNAL_STORAGE because Documents/ is outside the
+         per-app scoped folder. requestLegacyExternalStorage=true keeps
+         java.io.File working on API 29. -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+                     android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+                     android:maxSdkVersion="29" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+                     tools:ignore="ScopedStorage" />
+
+    <queries>
+        <intent>
+            <action android:name="android.settings.MANAGE_APP_ALL_FILES_ACCESS_PERMISSION" />
+        </intent>
+    </queries>
+
+    <uses-feature android:name="android.hardware.touchscreen"
+                  android:required="false" />
+
+    <application
+        android:label="HEXON BETA"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:theme="@style/Theme.Hexon"
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:supportsRtl="true"
+        android:requestLegacyExternalStorage="true"
+        android:usesCleartextTraffic="false">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize|uiMode|density|fontScale"
+            android:launchMode="singleTask"
+            android:screenOrientation="unspecified">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

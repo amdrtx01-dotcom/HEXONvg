@@ -1,0 +1,461 @@
+/* ============================================================
+   HEXON BETA — game-specific styles
+   play layout, board, cells, tray, drag layer, side column
+   The game screen never scrolls — the board is sized to fit
+   the available viewport height/width automatically.
+   ============================================================ */
+
+/* ---------- Game header strip ---------- */
+.game-head { gap: 10px; }
+.hud-strip {
+  flex: 1; min-width: 0;
+  display: flex; flex-wrap: wrap; gap: 8px;
+  justify-content: center;
+}
+.hud-strip .chip {
+  padding: 7px 12px; border-radius: 10px;
+  background: var(--card-strong); border: 1px solid var(--border);
+  font-size: 12px; font-weight: 600; color: var(--fg-dim);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.hud-strip .chip .lbl {
+  text-transform: uppercase; letter-spacing: 0.12em;
+  font-size: 10px;
+}
+.hud-strip .chip b { color: var(--fg); font-size: 13px; }
+
+/* ---------- Game body grid ---------- */
+/* `--play-size` is the square edge length the board *and* the tray
+   share. It's computed from whichever viewport axis is most
+   constraining so neither overflows the other axis. We use 100dvh
+   (dynamic viewport height) so the board doesn't get cropped when
+   mobile browsers shrink the visible area for the address bar. */
+.game-body {
+  flex: 1; min-height: 0; min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 320px);
+  gap: 16px;
+  padding: 16px 18px;
+  overflow: hidden;
+  /* Two-column layout: leave room for the 320px side-col + gaps. */
+  --play-size: min(
+    calc(100vw - 32px - 320px - 16px),
+    calc(100dvh - 280px)
+  );
+  /* Hint to the compositor: this region drives game-only paint. */
+  contain: layout paint style;
+}
+.play-left {
+  display: flex; flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-width: 0; min-height: 0;
+}
+
+/* The board is the dominant element. Its edge length is driven by
+   `--play-size` (see .game-body) which already accounts for both
+   width *and* height, so we never need a separate calc() here. */
+.board-wrap {
+  position: relative;
+  padding: 14px; border-radius: 22px;
+  background: var(--card); border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  width: min(100%, var(--play-size, 100%));
+  aspect-ratio: 1 / 1;
+  flex: 0 0 auto;
+  /* Isolate the board so cell pop/clear animations don't trigger
+     layout work outside the wrap. Huge win on cheap phones. */
+  contain: layout paint;
+}
+.board-wrap::before {
+  content: ""; position: absolute; inset: 0; border-radius: 22px;
+  background: radial-gradient(400px 280px at 50% 0%, rgba(124, 92, 255, 0.10), transparent 70%);
+  pointer-events: none;
+}
+.board {
+  position: relative;
+  width: 100%; height: 100%;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  gap: 3px; padding: 6px;
+  background: var(--grid-bg);
+  border-radius: 16px;
+}
+.cell {
+  background: var(--grid-cell);
+  border-radius: 6px;
+  position: relative;
+  transition: background 0.15s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  will-change: transform, opacity;
+  contain: layout style;
+}
+.cell.filled {
+  background: var(--cell-color, #7c5cff);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), inset 0 -3px 0 rgba(0, 0, 0, 0.15);
+}
+.cell.ghost {
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.42),
+    inset 0 -2px 0 rgba(255, 255, 255, 0.12);
+}
+html[data-theme="light"] .cell.ghost {
+  background: rgba(13, 18, 36, 0.16);
+  box-shadow:
+    inset 0 0 0 1px rgba(13, 18, 36, 0.28),
+    inset 0 -2px 0 rgba(13, 18, 36, 0.08);
+}
+.cell.ghost-bad {
+  background: rgba(255, 100, 112, 0.30);
+  box-shadow: inset 0 0 0 1px rgba(255, 100, 112, 0.55);
+}
+.cell.clearing { animation: cellClear 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+@keyframes cellClear {
+  0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+  35% { transform: scale(1.18); filter: brightness(1.5); }
+  100% { transform: scale(0); opacity: 0; filter: brightness(1.8); }
+}
+.cell.pop { animation: cellPop 0.25s ease; }
+@keyframes cellPop {
+  0% { transform: scale(0.6); opacity: 0.4; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ============================================================
+   Booster bar (in-game)
+   ============================================================
+   Sits above the board. One slot per booster type. A slot can be:
+     - empty    (greyed out, count "0")          — still tappable
+                                                    (toasts "buy in shop")
+     - owned    (full colour, shows count)       — armable
+     - armed    (golden ring, scale-up pulse)    — next compatible
+                                                    interaction consumes it
+   Rebuilt by scripts/boosts.js → renderBoosterBar() on every state
+   change. The bar is rendered even if the player owns nothing — the
+   empty slots act as a teaser for the shop tab. */
+.booster-bar {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  width: min(100%, var(--play-size, 100%));
+  padding: 8px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--card-strong), var(--card));
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  flex: 0 0 auto;
+}
+.booster-slot {
+  position: relative;
+  display: grid; place-items: center; gap: 4px;
+  padding: 8px 4px 6px;
+  border-radius: 12px;
+  background: rgba(0,0,0,.30);
+  border: 1px solid rgba(255,255,255,.06);
+  color: var(--fg-dim);
+  cursor: pointer;
+  transition: transform .12s ease, border-color .15s ease, background .15s ease, color .15s ease;
+  --slot-accent: #7c5cff;
+}
+.booster-slot .ic-svg { width: 22px; height: 22px; }
+.booster-slot .booster-count {
+  font: 800 11px/1 ui-monospace, "JetBrains Mono", monospace;
+  letter-spacing: .04em;
+  color: var(--fg-dim);
+}
+.booster-slot.owned {
+  color: var(--slot-accent);
+  border-color: color-mix(in srgb, var(--slot-accent) 35%, rgba(255,255,255,.06));
+  background:
+    radial-gradient(80% 60% at 50% 0%, color-mix(in srgb, var(--slot-accent) 18%, transparent), transparent 70%),
+    rgba(0,0,0,.30);
+}
+.booster-slot.owned .booster-count { color: #fff; }
+.booster-slot.owned:hover { transform: translateY(-1px); }
+.booster-slot.empty { opacity: .55; }
+.booster-slot.armed {
+  border-color: #ffd166;
+  color: #ffd166;
+  box-shadow: 0 0 0 2px rgba(255, 209, 102, .35), 0 8px 22px -10px rgba(255, 209, 102, .65);
+  animation: boosterArmedPulse 1.4s ease-in-out infinite;
+}
+@keyframes boosterArmedPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+/* Bomb / lightning targeting overlays on cells. Painted by
+   scripts/boosts.js while a booster is armed. */
+.cell.boost-hit {
+  background: rgba(255, 209, 102, .42);
+  box-shadow: inset 0 0 0 1px rgba(255, 209, 102, .65);
+}
+.board.armed { cursor: crosshair; }
+.tray.armed-skip .piece { cursor: pointer; }
+.tray.armed-skip .piece:not(.empty)::before {
+  content: "";
+  position: absolute; inset: 0; border-radius: inherit;
+  background: rgba(167, 102, 255, .15);
+  border: 1px dashed rgba(167, 102, 255, .55);
+  pointer-events: none;
+  z-index: 1;
+}
+/* Hint highlight: pulses the suggested cells for a beat without
+   actually placing the piece. */
+.cell.boost-hint {
+  background: rgba(61, 220, 151, .42) !important;
+  box-shadow: inset 0 0 0 1px rgba(61, 220, 151, .70), 0 0 18px rgba(61, 220, 151, .50);
+  animation: boostHintFade 1.6s ease-out forwards;
+}
+@keyframes boostHintFade {
+  0%   { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ---------- Tray (pieces) ---------- */
+.tray {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  padding: 12px; border-radius: 20px;
+  background: linear-gradient(180deg, var(--card-strong), var(--card));
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  width: min(100%, var(--play-size, 100%));
+  flex: 0 0 auto;
+}
+.piece {
+  position: relative;
+  display: grid; place-items: center;
+  padding: 14px 10px 10px; border-radius: 14px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.06), transparent 70%),
+    var(--card-strong);
+  border: 1px solid var(--border);
+  /* Fixed-ish slot height keeps all 3 tray cells aligned even when one
+     piece is a tall 1xN bar. The swatch inside (capped to max-height:
+     100%) shrinks via per-piece --piece-cell-px from JS. */
+  min-height: 92px;
+  max-height: 130px;
+  transition: transform 0.18s ease, opacity 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  touch-action: none;
+  cursor: grab;
+  overflow: hidden;
+}
+.piece::after {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.piece:hover:not(.empty):not(.dead) {
+  border-color: var(--border-strong);
+  transform: translate3d(0, -2px, 0);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+}
+.piece:active { cursor: grabbing; }
+.piece.empty {
+  opacity: 0.35;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--card) 0 6px,
+    transparent 6px 12px
+  );
+  border-style: dashed;
+}
+.piece.dragging { opacity: 0.22; }
+.piece.dead { filter: saturate(0.2); opacity: 0.38; }
+
+.piece-grid {
+  display: grid; gap: 3px;
+  /* Cap the swatch height so 1xN vertical bars never burst out of the
+     tray slot. The slot is overflow:hidden, but capping here also keeps
+     the row from inflating which would push neighbouring slots taller. */
+  max-height: 100%;
+}
+.piece-cell {
+  width: var(--piece-cell-px, 18px);
+  height: var(--piece-cell-px, 18px);
+  border-radius: 5px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.20), rgba(0, 0, 0, 0) 55%),
+    var(--cell-color);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.22),
+    0 2px 4px rgba(0, 0, 0, 0.18);
+}
+.piece-cell.gap { background: transparent; box-shadow: none; }
+
+/* rotate handle */
+.piece-rotate {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 26px; height: 26px;
+  border-radius: 8px;
+  background: var(--card-hi);
+  border: 1px solid var(--border);
+  color: var(--fg-dim);
+  display: grid; place-items: center;
+  opacity: 0; transform: translateY(-2px);
+  transition: opacity 0.18s ease, transform 0.18s ease, color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  cursor: pointer;
+  z-index: 2;
+}
+.piece-rotate .ic-svg { width: 14px; height: 14px; }
+.piece:hover:not(.empty):not(.dead) .piece-rotate,
+.piece-rotate:focus-visible {
+  opacity: 1; transform: translateY(0);
+}
+.piece-rotate:hover {
+  color: var(--fg);
+  background: var(--accent-grad);
+  border-color: transparent;
+}
+@media (hover: none) {
+  .piece-rotate { opacity: 1; transform: none; }
+}
+
+/* ---------- Floating drag layer ---------- */
+#drag-layer {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  /* `will-change` lifts the drag layer onto its own GPU compositing
+     layer so dragging never repaints the screen behind it. */
+  will-change: transform;
+  contain: layout paint style;
+}
+.float-piece {
+  position: absolute;
+  pointer-events: none;
+  display: grid; gap: 3px;
+  /* Use translate3d via transform so movement happens entirely on
+     the GPU — no per-frame layout/style recalc on phones. */
+  will-change: transform;
+}
+.float-piece .pc {
+  width: var(--c, 22px); height: var(--c, 22px);
+  border-radius: 6px;
+  background: var(--cell-color);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.18),
+    0 10px 26px rgba(0, 0, 0, 0.4);
+}
+.float-piece .pc.gap { background: transparent; box-shadow: none; }
+
+/* ---------- Side column ---------- */
+.side-col {
+  display: flex; flex-direction: column; gap: 10px;
+  min-height: 0; min-width: 0;
+}
+.side-card { padding: 14px 16px; flex: 0 0 auto; }
+.side-tasks-card {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column;
+}
+.side-tasks-card .daily-mini-list {
+  overflow: auto;
+  scrollbar-width: thin;
+  flex: 1; min-height: 0;
+}
+
+.combo-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 12px 14px; border-radius: 14px;
+  background: var(--accent-grad-soft);
+  border: 1px solid var(--border-strong);
+}
+.combo-banner .lbl {
+  font-size: 11px; color: var(--fg-dim);
+  text-transform: uppercase; letter-spacing: 0.12em;
+}
+.combo-banner .v {
+  font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 20px;
+}
+
+.daily-mini-list { display: flex; flex-direction: column; gap: 8px; }
+.daily-mini {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 10px 12px; border-radius: 12px;
+  background: var(--card-strong); border: 1px solid var(--border);
+}
+.daily-mini .lbl { font-size: 12px; color: var(--fg-dim); }
+.daily-mini .ttl { font-weight: 600; font-size: 13px; }
+
+/* ---------- Responsive ----------
+   The board/tray width follows the `--play-size` variable. Each
+   breakpoint just retunes how much vertical chrome it needs to
+   account for (header + tray + paddings + side-col on landscape).
+   This keeps the board square and on-screen on every device, from
+   320×568 phones in portrait up to 4K monitors. */
+@media (max-width: 980px) {
+  .game-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+    padding: 12px;
+    gap: 12px;
+    /* Single column → the side-col stacks below and steals ~140px. */
+    --play-size: min(
+      calc(100vw - 24px),
+      calc(100dvh - 360px)
+    );
+  }
+  .side-col {
+    flex-direction: row;
+    overflow: auto;
+  }
+  .side-card { flex: 1 0 220px; }
+  .side-tasks-card { display: none; }
+}
+@media (max-width: 640px) {
+  .game-body {
+    padding: 8px;
+    --play-size: min(
+      calc(100vw - 16px),
+      calc(100dvh - 320px)
+    );
+  }
+  .hud-strip .chip { padding: 6px 10px; font-size: 11px; }
+  .hud-strip .chip b { font-size: 12px; }
+}
+@media (max-width: 380px) {
+  .game-body {
+    padding: 6px;
+    gap: 8px;
+    --play-size: min(
+      calc(100vw - 12px),
+      calc(100dvh - 300px)
+    );
+  }
+  .tray { padding: 8px; gap: 8px; }
+  .piece { min-height: 76px; padding: 10px 6px 6px; }
+}
+@media (max-height: 640px) {
+  .game-body {
+    --play-size: min(
+      calc(100vw - 24px),
+      calc(100dvh - 240px)
+    );
+  }
+  .piece-cell { width: 14px; height: 14px; }
+  .piece { min-height: 64px; padding: 10px 6px 6px; }
+  .piece-rotate { width: 22px; height: 22px; top: 3px; right: 3px; }
+  .piece-rotate .ic-svg { width: 12px; height: 12px; }
+}
+@media (max-height: 520px) {
+  /* Tight landscape phones: pull the chrome budget down further so
+     the board still gets a useful play area. */
+  .game-body {
+    padding: 6px;
+    gap: 8px;
+    --play-size: min(
+      calc(100vw - 16px),
+      calc(100dvh - 200px)
+    );
+  }
+  .game-head { padding: 6px 10px; }
+  .tray { padding: 8px; gap: 8px; }
+}

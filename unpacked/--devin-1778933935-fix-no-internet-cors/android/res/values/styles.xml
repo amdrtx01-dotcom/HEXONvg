@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Plain dark theme with no action bar, edge-to-edge background. -->
+    <style name="Theme.Hexon" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_bg</item>
+        <item name="android:colorBackground">@color/hexon_bg</item>
+        <item name="android:statusBarColor">@color/hexon_bg</item>
+        <item name="android:navigationBarColor">@color/hexon_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

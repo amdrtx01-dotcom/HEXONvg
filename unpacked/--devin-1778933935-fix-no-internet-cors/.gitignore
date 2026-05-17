@@ -1,0 +1,8 @@
+# Android build intermediates produced by android/build_apk.sh.
+# The signed APK at android/build/HEXON.apk is the only build output
+# we ship; everything else here is regenerated on every build.
+android/build/*
+!android/build/
+!android/build/HEXON.apk
+android/assets/
+android/debug.keystore

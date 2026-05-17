@@ -1,0 +1,1114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<meta name="theme-color" content="#07090f" />
+<title>HEXON BETA</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/layout.css">
+<link rel="stylesheet" href="styles/menu.css">
+<link rel="stylesheet" href="styles/components.css">
+<link rel="stylesheet" href="styles/game.css">
+<link rel="stylesheet" href="styles/shop.css">
+<link rel="stylesheet" href="styles/tournaments.css">
+<link rel="stylesheet" href="styles/whatsnew.css">
+<link rel="stylesheet" href="styles/effects.css">
+
+<!-- Boot splash — inlined so it paints on the very first frame
+     (before any external stylesheet has finished downloading).
+     The screen is removed by scripts/main.js once init() finishes,
+     so the player sees branded art instead of a blank white page
+     while the JS bundle warms up. -->
+<style>
+  /* The splash itself: fixed, full-viewport, deep-navy radial wash. */
+  #boot-splash{
+    position:fixed; inset:0; z-index:9999;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap: clamp(14px, 3vw, 22px);
+    padding: 16px;
+    box-sizing: border-box;
+    background:
+      radial-gradient(60% 60% at 50% 38%, rgba(124, 92, 255, .28), transparent 70%),
+      radial-gradient(80% 80% at 50% 110%, rgba(36, 189, 255, .22), transparent 70%),
+      linear-gradient(160deg, #07090f 0%, #0e1230 55%, #07090f 100%);
+    color:#e9ecf7;
+    font-family: Manrope, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    user-select:none;
+    transition: opacity .45s ease, visibility .45s ease;
+  }
+  /* The dismiss class is toggled by main.js; we keep the node in
+     the DOM for the duration of the fade so the transition runs. */
+  #boot-splash.dismissed{ opacity:0; visibility:hidden; pointer-events:none; }
+
+  /* Subtle hexagon parallax dust in the background. */
+  #boot-splash::before, #boot-splash::after{
+    content:""; position:absolute; inset:-10%;
+    background-image:
+      radial-gradient(2px 2px at 18% 22%, rgba(255,255,255,.22), transparent 60%),
+      radial-gradient(2px 2px at 76% 18%, rgba(124,92,255,.30), transparent 60%),
+      radial-gradient(1.5px 1.5px at 32% 78%, rgba(36,189,255,.30), transparent 60%),
+      radial-gradient(1.5px 1.5px at 84% 72%, rgba(255,255,255,.20), transparent 60%);
+    animation: bootDrift 18s linear infinite;
+    pointer-events:none;
+  }
+  #boot-splash::after{ animation-duration:30s; animation-direction:reverse; opacity:.6; }
+
+  /* Glassy hex frame with a pulsing 3-tile composition inside.
+     Sizing uses clamp() so the emblem stays in proportion on tiny
+     phones (≈320px wide) and big desktop monitors alike. */
+  .boot-mark{
+    width: clamp(96px, 28vw, 132px);
+    height: clamp(96px, 28vw, 132px);
+    display:grid; place-items:center;
+    filter: drop-shadow(0 24px 40px rgba(124,92,255,.35)) drop-shadow(0 6px 20px rgba(36,189,255,.20));
+    animation: bootPulse 2.6s ease-in-out infinite;
+  }
+  .boot-mark svg{ width:100%; height:100%; display:block; }
+
+  /* Wordmark below the emblem. The "BETA" pill picks up the same
+     accent gradient that paints the in-game CTA buttons. */
+  .boot-word{
+    display:flex; align-items:center; gap: clamp(6px, 2vw, 10px);
+    font-weight:800; font-size: clamp(20px, 6vw, 30px); letter-spacing:.16em;
+    text-transform:uppercase;
+    text-align:center;
+  }
+  .boot-word b{
+    background: linear-gradient(135deg,#fff 0%, #cfd6ff 60%, #88a4ff 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .boot-word .pill{
+    display:inline-block; padding:3px 10px; border-radius:999px;
+    font-size: clamp(10px, 2.8vw, 13px); letter-spacing:.22em; font-weight:800;
+    background: linear-gradient(135deg, #7c5cff, #24bdff);
+    color:#0b0f1a;
+    box-shadow: 0 4px 14px -2px rgba(124,92,255,.55);
+  }
+  .boot-tag{
+    color:#8c97b6; font-size: clamp(11px, 2.8vw, 13px); letter-spacing:.28em;
+    text-transform:uppercase;
+  }
+
+  /* Indeterminate progress bar — slides back and forth with a
+     gradient highlight, matching the rest of the UI's accent. */
+  .boot-progress{
+    position:relative;
+    width: min(280px, 60vw); height: 4px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.07);
+    overflow:hidden;
+    margin-top: 4px;
+  }
+  .boot-progress::after{
+    content:""; position:absolute; inset:0;
+    width:40%;
+    background: linear-gradient(90deg, transparent, #7c5cff, #24bdff, transparent);
+    animation: bootSlide 1.4s ease-in-out infinite;
+  }
+
+  @keyframes bootPulse{
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.04); }
+  }
+  @keyframes bootSlide{
+    0%   { transform: translateX(-110%); }
+    100% { transform: translateX(260%); }
+  }
+  @keyframes bootDrift{
+    0%   { transform: translate3d(0,0,0); }
+    100% { transform: translate3d(-10%,-6%,0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    #boot-splash::before, #boot-splash::after,
+    .boot-mark, .boot-progress::after { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEXON_BOOT_TS anchors the splash to "first paint" rather than to
+     DOMContentLoaded so main.js can guarantee a steady 3s splash
+     even when the rest of the bundle warms up quickly. The script
+     is inlined and runs synchronously before any other JS file. -->
+<script>window.HEXON_BOOT_TS = Date.now();</script>
+
+<!-- Boot splash. Removed by main.js after init() completes. The
+     SVG emblem mirrors the Android adaptive launcher icon so the
+     transition from system splash → web splash feels seamless. -->
+<div id="boot-splash" role="status" aria-label="Loading HEXON BETA">
+  <div class="boot-mark" aria-hidden="true">
+    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bootHexFill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"  stop-color="#2A2F66"/>
+          <stop offset="100%" stop-color="#14193B"/>
+        </linearGradient>
+        <linearGradient id="bootHexStroke" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"  stop-color="#7C5CFF"/>
+          <stop offset="100%" stop-color="#24BDFF"/>
+        </linearGradient>
+        <linearGradient id="bootTilePurple" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"  stop-color="#A98BFF"/>
+          <stop offset="100%" stop-color="#6B4CFF"/>
+        </linearGradient>
+        <linearGradient id="bootTileCyan" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"  stop-color="#7CD9FF"/>
+          <stop offset="100%" stop-color="#1097D6"/>
+        </linearGradient>
+        <linearGradient id="bootTileMint" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"  stop-color="#7CF1B8"/>
+          <stop offset="100%" stop-color="#13B374"/>
+        </linearGradient>
+        <linearGradient id="bootGloss" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <!-- Halo layers -->
+      <path d="M60,16 L96,38 L96,82 L60,104 L24,82 L24,38 Z" fill="#7C5CFF" opacity="0.07"/>
+      <path d="M60,22 L92,40 L92,80 L60,98 L28,80 L28,40 Z" fill="#24BDFF" opacity="0.10"/>
+      <!-- Hex body -->
+      <path d="M60,28 L88,44 L88,76 L60,92 L32,76 L32,44 Z" fill="url(#bootHexFill)"/>
+      <path d="M60,28 L88,44 L88,76 L60,92 L32,76 L32,44 Z" fill="none" stroke="url(#bootHexStroke)" stroke-width="2.6"/>
+      <!-- Three tiles -->
+      <rect x="42" y="44" width="14" height="14" rx="2" fill="url(#bootTilePurple)"/>
+      <rect x="64" y="44" width="14" height="14" rx="2" fill="url(#bootTileCyan)"/>
+      <rect x="53" y="64" width="14" height="14" rx="2" fill="url(#bootTileMint)"/>
+      <!-- Top gloss -->
+      <path d="M60,28 L88,44 L88,52 L60,42 L32,52 L32,44 Z" fill="url(#bootGloss)"/>
+    </svg>
+  </div>
+  <div class="boot-word"><b>HEXON</b><span class="pill">BETA</span></div>
+  <div class="boot-tag">premium puzzle</div>
+  <div class="boot-progress" aria-hidden="true"></div>
+</div>
+
+<!-- ========= ICON SPRITE ========= -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7V5z"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.36.58.86.6 1.4"/></symbol>
+    <symbol id="i-tasks" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></symbol>
+    <symbol id="i-stats" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l3-3 4 4 5-7"/></symbol>
+    <symbol id="i-profile" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M5 5H3v3a3 3 0 0 0 3 3M19 5h2v3a3 3 0 0 1-3 3"/></symbol>
+    <symbol id="i-medal" viewBox="0 0 24 24"><circle cx="12" cy="15" r="6"/><path d="M8 4l4 7 4-7M8 4H5l3 5M16 4h3l-3 5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 2s4 4 4 8a4 4 0 1 1-8 0c0-2 1-3 2-4-1 4 2 5 2 5s-2-3 0-9z"/><path d="M5 14a7 7 0 0 0 14 0c0-2-1-4-2-5 1 3-1 5-3 5 2-3 0-7-2-9-1 4-2 5-4 6s-3 2-3 3z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21l1.2-6.9-5-4.9 6.9-1z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-rocket" viewBox="0 0 24 24"><path d="M5 19a4 4 0 0 0 4-4M14 4l6 6-8 8H6v-6l8-8z"/><circle cx="15" cy="9" r="1.5"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M19 12a4 4 0 0 0-2-3.5M22 12a7 7 0 0 0-3.5-6"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M22 9l-6 6M16 9l6 6"/></symbol>
+    <symbol id="i-vibrate" viewBox="0 0 24 24"><rect x="8" y="4" width="8" height="16" rx="2"/><path d="M3 9v6M21 9v6M5 11v2M19 11v2"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol>
+    <symbol id="i-caret" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></symbol>
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+    <symbol id="i-laptop" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/></symbol>
+    <symbol id="i-tablet" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="18" r="1"/></symbol>
+    <symbol id="i-smartphone" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="0.8"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></symbol>
+    <!-- Exit / leave-related icons hand-drawn from primitives. -->
+    <symbol id="i-door" viewBox="0 0 24 24"><path d="M14 3H5a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h9"/><path d="M14 3l6 2v14l-6 2z"/><circle cx="17" cy="12" r="0.9" fill="currentColor"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></symbol>
+    <symbol id="i-coffee" viewBox="0 0 24 24"><path d="M4 9h12v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M16 11h2a3 3 0 0 1 0 6h-2"/><path d="M7 3c0 1 1 1.5 1 2.5S7 7 7 8"/><path d="M11 3c0 1 1 1.5 1 2.5S11 7 11 8"/></symbol>
+    <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M7 6a8 8 0 1 0 10 0"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6z"/><path d="M19 3v3M21 4.5h-3M5 17v3M6.5 18.5h-3"/></symbol>
+    <symbol id="i-confetti" viewBox="0 0 24 24"><path d="M4 20l5-14"/><path d="M4 20l14-5"/><path d="M11 6l3 3"/><path d="M9 12l3 3"/><path d="M7 17l3-1"/><path d="M14 6l2 2"/><path d="M18 10l2 0"/><path d="M20 14l2 2"/></symbol>
+    <!-- Shop & wallet icons (hand-drawn). -->
+    <symbol id="i-shop" viewBox="0 0 24 24"><path d="M3 9l2-5h14l2 5"/><path d="M3 9v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9"/><path d="M9 14h6"/><path d="M3 9h18"/></symbol>
+    <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 0 1 6 0c0 1.5-2 1.8-3 3v1"/><circle cx="12" cy="16.5" r="0.9" fill="currentColor"/></symbol>
+    <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="12" rx="1.5"/><path d="M3 13h18"/><path d="M12 9v12"/><path d="M8 9c-2 0-3-3-1-4s4 4 4 4"/><path d="M16 9c2 0 3-3 1-4s-4 4-4 4"/></symbol>
+    <symbol id="i-tg" viewBox="0 0 24 24"><path d="M3 11l17-7-3 16-5-3-3 4-1-5z"/><path d="M9 16l5-5"/></symbol>
+    <symbol id="i-skin" viewBox="0 0 24 24"><path d="M4 7l4-4h8l4 4-3 3v9H7v-9z"/><path d="M9 10v9"/><path d="M15 10v9"/></symbol>
+    <!-- Booster icons (in-game booster bar + shop "Бусти" tab). Drawn
+         from scratch — no emoji — so they match the rest of the UI's
+         line-art style. -->
+    <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/><path d="M16 21h5v-5"/><path d="M21 21l-5-5"/><path d="M3 3l5 5"/></symbol>
+    <symbol id="i-bomb" viewBox="0 0 24 24"><circle cx="11" cy="15" r="6"/><path d="M15 11l3-3"/><path d="M18 8l2-2"/><path d="M19 4l2 2"/></symbol>
+    <symbol id="i-light" viewBox="0 0 24 24"><path d="M9 2h6l-3 7h5l-9 13 3-9H6z"/></symbol>
+    <symbol id="i-hint" viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10c1 1 2 2 2 4h4c0-2 1-3 2-4a6 6 0 0 0-4-10z"/></symbol>
+    <symbol id="i-skip" viewBox="0 0 24 24"><path d="M5 4l10 8-10 8z"/><path d="M19 5v14"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 3v4M16 3v4"/><circle cx="8" cy="14" r="0.9" fill="currentColor"/><circle cx="12" cy="14" r="0.9" fill="currentColor"/><circle cx="16" cy="14" r="0.9" fill="currentColor"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></symbol>
+    <symbol id="i-news" viewBox="0 0 24 24"><path d="M12 3l1.7 4.3 4.3 1.7-4.3 1.7L12 15l-1.7-4.3L6 9l4.3-1.7z"/><path d="M19 14v3M20.5 15.5h-3M6 17v2M7 18H5"/></symbol>
+    <!-- Gradient used by inline HEX coin SVGs in shop cards. -->
+    <linearGradient id="coin-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffdf80"/>
+      <stop offset="1" stop-color="#ffb454"/>
+    </linearGradient>
+  </defs>
+</svg>
+<!-- Decorative illustration sprite (hand-drawn vector art, no emoji). -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Sad-face waving "farewell" character used in the exit modal.
+         Drawn from scratch with circles + paths; no fonts/emoji. -->
+    <symbol id="art-farewell" viewBox="0 0 120 120">
+      <defs>
+        <linearGradient id="artFarewellBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#7c5cff" stop-opacity="0.30"/>
+          <stop offset="1" stop-color="#24bdff" stop-opacity="0.10"/>
+        </linearGradient>
+        <linearGradient id="artFarewellFace" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#a89bff"/>
+          <stop offset="1" stop-color="#7c5cff"/>
+        </linearGradient>
+      </defs>
+      <circle cx="60" cy="60" r="56" fill="url(#artFarewellBg)"/>
+      <!-- floating dots -->
+      <circle cx="22" cy="34" r="2" fill="#7c5cff" opacity="0.5"/>
+      <circle cx="100" cy="40" r="3" fill="#24bdff" opacity="0.6"/>
+      <circle cx="96" cy="82" r="2" fill="#3ddc97" opacity="0.5"/>
+      <circle cx="18" cy="82" r="2.5" fill="#ffb454" opacity="0.55"/>
+      <!-- head -->
+      <circle cx="60" cy="60" r="30" fill="url(#artFarewellFace)"/>
+      <!-- eyes -->
+      <ellipse cx="50" cy="57" rx="3.2" ry="4.4" fill="#0b0f1a"/>
+      <ellipse cx="70" cy="57" rx="3.2" ry="4.4" fill="#0b0f1a"/>
+      <ellipse cx="51.4" cy="55.4" rx="0.9" ry="1.2" fill="#fff"/>
+      <ellipse cx="71.4" cy="55.4" rx="0.9" ry="1.2" fill="#fff"/>
+      <!-- tiny tear -->
+      <path d="M48 67 Q47 71 49 73 Q51 71 49 67 Z" fill="#24bdff" opacity="0.85"/>
+      <!-- soft frown -->
+      <path d="M50 74 Q60 68 70 74" fill="none" stroke="#0b0f1a" stroke-width="2.4" stroke-linecap="round"/>
+      <!-- waving hand -->
+      <g transform="translate(86 46)">
+        <rect x="-5" y="-2" width="14" height="10" rx="4" fill="#ffb454" transform="rotate(-18)"/>
+        <rect x="-4" y="-3" width="3" height="6" rx="1" fill="#ffb454" transform="rotate(-26)"/>
+        <rect x="-1" y="-4" width="3" height="7" rx="1" fill="#ffb454" transform="rotate(-18)"/>
+        <rect x="2"  y="-4" width="3" height="7" rx="1" fill="#ffb454" transform="rotate(-10)"/>
+        <rect x="5"  y="-3" width="3" height="6" rx="1" fill="#ffb454" transform="rotate(-2)"/>
+      </g>
+    </symbol>
+    <!-- Confetti / level-up burst used by the level-up celebration. -->
+    <symbol id="art-burst" viewBox="0 0 120 120">
+      <g transform="translate(60 60)">
+        <circle r="24" fill="none" stroke="#7c5cff" stroke-width="3" opacity="0.4"/>
+        <circle r="40" fill="none" stroke="#24bdff" stroke-width="2" opacity="0.3"/>
+        <g stroke="currentColor" stroke-width="3" stroke-linecap="round">
+          <line x1="0" y1="-46" x2="0" y2="-30"/>
+          <line x1="0" y1="46" x2="0" y2="30"/>
+          <line x1="-46" y1="0" x2="-30" y2="0"/>
+          <line x1="46" y1="0" x2="30" y2="0"/>
+          <line x1="-33" y1="-33" x2="-22" y2="-22"/>
+          <line x1="33" y1="33" x2="22" y2="22"/>
+          <line x1="-33" y1="33" x2="-22" y2="22"/>
+          <line x1="33" y1="-33" x2="22" y2="-22"/>
+        </g>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<div id="app-root">
+
+  <!-- ========= LOGIN ========= -->
+  <div id="login-screen" class="login-wrap">
+    <div class="login-card glass-strong">
+      <div class="login-logo">
+        <div class="logo-mark">
+          <!-- Hex emblem with three coloured tiles — same artwork
+               as the launcher icon and the boot splash so the
+               brand stays consistent across every entry point. -->
+          <svg viewBox="0 0 24 24" width="26" height="26" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="loginHexStroke" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%"  stop-color="#7C5CFF"/>
+                <stop offset="100%" stop-color="#24BDFF"/>
+              </linearGradient>
+            </defs>
+            <path d="M12 3 L20 7.5 L20 16.5 L12 21 L4 16.5 L4 7.5 Z"
+                  fill="rgba(255,255,255,.06)" stroke="url(#loginHexStroke)" stroke-width="1.4"/>
+            <rect x="7"  y="8"  width="4" height="4" rx="0.8" fill="#A98BFF"/>
+            <rect x="13" y="8"  width="4" height="4" rx="0.8" fill="#7CD9FF"/>
+            <rect x="10" y="13" width="4" height="4" rx="0.8" fill="#7CF1B8"/>
+          </svg>
+        </div>
+        <div>
+          <div class="logo-title">HEXON <span style="color:var(--fg-mute);font-weight:600">BETA</span></div>
+          <div class="logo-sub" data-i18n="login.sub">premium puzzle</div>
+        </div>
+      </div>
+      <h2 class="login-h" data-i18n="login.title">Welcome</h2>
+      <p class="login-p" data-i18n="login.desc">Choose a nickname to start playing.</p>
+
+      <!-- Device picker: shown BEFORE the nickname so the layout can
+           adapt to the chosen device while the user types their name. -->
+      <div class="login-device">
+        <div class="login-device-head">
+          <span class="lbl" data-i18n="login.device">Device</span>
+          <span class="sub" data-i18n="login.device.sub">We will adjust the interface for you</span>
+        </div>
+        <div class="device-grid" id="login-device-grid"></div>
+        <div class="login-device-foot">
+          <button class="switch on" id="login-remember" aria-label="remember device"></button>
+          <span class="lbl" data-i18n="login.remember">Remember choice</span>
+        </div>
+      </div>
+
+      <div class="input-row">
+        <svg class="ic-svg lg" style="color:var(--fg-dim)"><use href="#i-profile"/></svg>
+        <input id="nickname-input" type="text" maxlength="20" placeholder="Player" autocomplete="off" spellcheck="false">
+        <span class="hint mono" id="nick-count">0/20</span>
+      </div>
+      <div class="input-row">
+        <svg class="ic-svg lg" style="color:var(--fg-dim)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        <input id="password-input" type="password" maxlength="32" placeholder="••••••" autocomplete="off" spellcheck="false">
+        <button id="password-toggle" class="hint mono" type="button" data-i18n="login.show" aria-label="toggle password" style="background:transparent;border:none;cursor:pointer;padding:4px 8px;">show</button>
+      </div>
+      <div id="login-error" class="login-error" hidden></div>
+      <div class="login-actions">
+        <button class="btn btn-primary btn-block" id="login-confirm">
+          <svg class="ic-svg lg"><use href="#i-check"/></svg>
+          <span data-i18n="login.confirm">Confirm</span>
+        </button>
+      </div>
+      <div id="login-perm" class="login-perm" hidden>
+        <p data-i18n="login.perm.desc">To keep your progress across reinstalls, the game saves your profile to Documents/HEXON. Please grant file access.</p>
+        <button class="btn btn-ghost btn-block" id="login-perm-grant" data-i18n="login.perm.grant">Grant file access</button>
+      </div>
+      <div class="login-footer">
+        <span>
+          <svg class="ic-svg"><use href="#i-globe"/></svg>
+          <span data-i18n="set.lang">Language</span>
+        </span>
+        <div class="dropdown" id="login-lang-dropdown" data-lang-dropdown></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========= APP ========= -->
+  <div id="app" style="display:none">
+
+    <!-- ============ MENU SCREEN ============ -->
+    <section class="screen menu-screen" data-screen="menu">
+      <header class="screen-head menu-head">
+        <div class="brand">
+          <div class="logo-mark">
+            <!-- Same hex emblem as the launcher icon + boot splash. -->
+            <svg viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="menuHexStroke" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%"  stop-color="#7C5CFF"/>
+                  <stop offset="100%" stop-color="#24BDFF"/>
+                </linearGradient>
+              </defs>
+              <path d="M12 3 L20 7.5 L20 16.5 L12 21 L4 16.5 L4 7.5 Z"
+                    fill="rgba(255,255,255,.06)" stroke="url(#menuHexStroke)" stroke-width="1.4"/>
+              <rect x="7"  y="8"  width="4" height="4" rx="0.8" fill="#A98BFF"/>
+              <rect x="13" y="8"  width="4" height="4" rx="0.8" fill="#7CD9FF"/>
+              <rect x="10" y="13" width="4" height="4" rx="0.8" fill="#7CF1B8"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <div class="t1">HEXON BETA</div>
+            <div class="t2" data-i18n="brand.tag">premium puzzle</div>
+          </div>
+        </div>
+        <div class="menu-pills">
+          <!-- HEX coin wallet — clickable shortcut to the shop. -->
+          <button type="button" class="hex-coin-pill glass" id="hex-coin-pill" aria-label="HEX wallet">
+            <svg class="coin-pill-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" fill="url(#coin-grad)" stroke="rgba(255,180,84,.7)" stroke-width="1.2"/>
+              <text x="12" y="16" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="800" fill="#0b0f1a">H</text>
+            </svg>
+            <span class="coin-pill-amount mono" id="hex-coin-amount">0</span>
+            <span class="coin-pill-unit">HEX</span>
+          </button>
+          <!-- Daily reward (10-5000 HEX, once/day, available after 11:00). -->
+          <button type="button" class="daily-reward-pill glass daily-locked" id="daily-reward-pill" aria-label="Daily HEX reward">
+            <svg class="ic-svg sm" aria-hidden="true"><use href="#i-gift"/></svg>
+            <span class="daily-label" data-i18n="daily.title">Daily</span>
+            <span class="daily-cta mono">—</span>
+          </button>
+        </div>
+        <div class="user-pill glass" id="menu-user-pill">
+          <div class="avatar sm" id="menu-avatar">P</div>
+          <div class="info">
+            <div class="nm" id="menu-name">Player</div>
+            <div class="meta mono">
+              <span data-i18n="hud.lvl">Lvl</span> <b id="menu-level">1</b>
+              · <span data-i18n="profile.best">High score</span>: <b id="menu-best">0</b>
+              <br/><span class="menu-id mono" id="menu-player-id" title="HEXON ID">ID —</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="menu-body">
+        <!-- "What's new" pill above the Play card. Pulses a tiny dot
+             when the player hasn't opened the changelog for the
+             current build yet. Click opens #modal-whatsnew. -->
+        <button class="whatsnew-pill glass" id="whatsnew-btn" type="button" aria-label="What's new">
+          <span class="whatsnew-pill-icon"><svg class="ic-svg"><use href="#i-sparkle"/></svg></span>
+          <span class="whatsnew-pill-text">
+            <b data-i18n="whatsnew.cta">What's new</b>
+            <span class="whatsnew-pill-sub" data-i18n="whatsnew.cta.sub">See the latest fixes and features</span>
+          </span>
+          <span class="whatsnew-pill-dot hidden" id="whatsnew-dot" aria-hidden="true"></span>
+        </button>
+
+        <button class="play-card" data-go="game">
+          <div class="play-card-icon">
+            <svg class="ic-svg xl"><use href="#i-play"/></svg>
+          </div>
+          <div class="play-card-text">
+            <div class="big" data-i18n="menu.play">Play</div>
+            <div class="sub" data-i18n="menu.play.sub">Drop pieces onto the 10×10 board</div>
+          </div>
+          <div class="play-card-stats">
+            <div><span class="lbl" data-i18n="hud.best">Best</span> <b class="mono" id="menu-card-best">0</b></div>
+            <div><span class="lbl" data-i18n="hud.lvl">Lvl</span> <b class="mono" id="menu-card-level">1</b></div>
+          </div>
+        </button>
+
+        <div class="menu-grid">
+          <button class="menu-tile glass" data-go="tasks">
+            <svg class="ic-svg lg"><use href="#i-tasks"/></svg>
+            <span data-i18n="tab.tasks">Tasks</span>
+          </button>
+          <button class="menu-tile glass" data-go="stats">
+            <svg class="ic-svg lg"><use href="#i-stats"/></svg>
+            <span data-i18n="tab.stats">Stats</span>
+          </button>
+          <button class="menu-tile glass" data-go="profile">
+            <svg class="ic-svg lg"><use href="#i-profile"/></svg>
+            <span data-i18n="tab.profile">Profile</span>
+          </button>
+          <button class="menu-tile glass" data-go="leaderboards">
+            <svg class="ic-svg lg"><use href="#i-trophy"/></svg>
+            <span data-i18n="tab.leaderboards">Leaderboards</span>
+          </button>
+          <button class="menu-tile glass" data-go="achievements">
+            <svg class="ic-svg lg"><use href="#i-medal"/></svg>
+            <span data-i18n="tab.achievements">Achievements</span>
+          </button>
+          <button class="menu-tile glass" data-go="settings">
+            <svg class="ic-svg lg"><use href="#i-settings"/></svg>
+            <span data-i18n="tab.settings">Settings</span>
+          </button>
+          <button class="menu-tile glass menu-tile-shop" id="menu-shop">
+            <svg class="ic-svg lg"><use href="#i-shop"/></svg>
+            <span data-i18n="tab.shop">Shop</span>
+          </button>
+          <button class="menu-tile glass menu-tile-tour" data-go="tournaments">
+            <svg class="ic-svg lg"><use href="#i-trophy"/></svg>
+            <span data-i18n="tab.tournaments">Tournaments</span>
+          </button>
+          <button class="menu-tile glass menu-tile-admin hidden" id="menu-admin" data-go="admin">
+            <svg class="ic-svg lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg>
+            <span data-i18n="menu.admin">Admin</span>
+          </button>
+          <button class="menu-tile glass menu-tile-exit" id="menu-exit">
+            <svg class="ic-svg lg"><use href="#i-door"/></svg>
+            <span data-i18n="menu.exit">Exit</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GAME SCREEN ============ -->
+    <section class="screen game-screen" data-screen="game">
+      <header class="screen-head game-head">
+        <button class="btn-back" data-go="menu" aria-label="menu">
+          <svg class="ic-svg lg"><use href="#i-arrow-left"/></svg>
+          <span data-i18n="nav.menu">Menu</span>
+        </button>
+        <div class="hud-strip">
+          <span class="chip"><span class="lbl" data-i18n="hud.score">Score</span> <b class="mono" id="hud-score">0</b></span>
+          <span class="chip"><span class="lbl" data-i18n="hud.best">Best</span> <b class="mono" id="hud-best">0</b></span>
+          <span class="chip"><span class="lbl" data-i18n="hud.lines">Lines</span> <b class="mono" id="hud-lines">0</b></span>
+          <span class="chip"><span class="lbl" data-i18n="hud.combo">Combo</span> <b class="mono" id="hud-combo">x1</b></span>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-ghost icon-btn" id="btn-howto" aria-label="how to play"><svg class="ic-svg"><use href="#i-target"/></svg></button>
+          <button class="btn btn-ghost icon-btn" id="btn-restart" aria-label="restart"><svg class="ic-svg"><use href="#i-reset"/></svg></button>
+        </div>
+      </header>
+
+      <div class="game-body">
+        <div class="play-left">
+          <!-- In-game booster bar.
+               One slot per booster type. Each slot shows the icon, the
+               count of unspent charges, and lights up if the player
+               owns one. Tap → arms the booster; the next valid board
+               tap consumes a charge. Empty slots are click-throughs
+               that toast the player to "buy one in the shop". The bar
+               is rebuilt by scripts/boosts.js on every state change. -->
+          <div class="booster-bar" id="booster-bar" role="toolbar" aria-label="boosters"></div>
+          <div class="board-wrap">
+            <div class="board" id="board"></div>
+          </div>
+          <div class="tray" id="tray"></div>
+        </div>
+        <aside class="side-col">
+          <div class="side-card glass">
+            <div class="combo-banner">
+              <div>
+                <div class="lbl" data-i18n="play.streak">Streak</div>
+                <div class="v" id="side-streak">0</div>
+              </div>
+              <div style="text-align:right">
+                <div class="lbl" data-i18n="play.placed">Placed</div>
+                <div class="v" id="side-placed">0</div>
+              </div>
+            </div>
+            <div class="level-bar" style="margin-top:14px">
+              <div class="ft"><span><span data-i18n="profile.level">Level</span> <span id="side-level">1</span></span><span id="side-xp">0/100</span></div>
+              <div class="bar"><i id="side-xp-bar" style="width:0%"></i></div>
+            </div>
+          </div>
+          <div class="side-card glass side-tasks-card">
+            <div class="section-title" style="margin:0 0 10px"><span class="dot"></span><span data-i18n="play.today">Today's tasks</span></div>
+            <div class="daily-mini-list" id="side-tasks"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============ SETTINGS SCREEN ============ -->
+    <section class="screen" data-screen="settings">
+      <header class="screen-head">
+        <button class="btn-back" data-go="menu">
+          <svg class="ic-svg lg"><use href="#i-arrow-left"/></svg>
+          <span data-i18n="nav.menu">Menu</span>
+        </button>
+        <h2 class="screen-title"><svg class="ic-svg lg"><use href="#i-settings"/></svg> <span data-i18n="tab.settings">Settings</span></h2>
+        <span class="head-spacer"></span>
+      </header>
+      <div class="scroll-body">
+        <div class="section-title"><span class="dot"></span><span data-i18n="set.general">General</span></div>
+
+        <div class="row">
+          <div>
+            <div class="lbl" data-i18n="set.lang">Language</div>
+            <div class="sub" data-i18n="set.lang.sub">Applies to all menus and game text</div>
+          </div>
+          <div class="dropdown" id="set-lang-dropdown" data-lang-dropdown></div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="lbl" data-i18n="set.theme">Theme</div>
+            <div class="sub" data-i18n="set.theme.sub">Light or dark surface</div>
+          </div>
+          <div class="seg" id="set-theme">
+            <button data-val="dark" class="on"><svg class="ic-svg"><use href="#i-moon"/></svg></button>
+            <button data-val="light"><svg class="ic-svg"><use href="#i-sun"/></svg></button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="lbl" data-i18n="set.sound">Sound</div>
+            <div class="sub" data-i18n="set.sound.sub">UI tones &amp; clears</div>
+          </div>
+          <button class="switch on" id="set-sound" aria-label="sound"></button>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="lbl" data-i18n="set.vibration">Vibration</div>
+            <div class="sub" data-i18n="set.vibration.sub">Mobile haptics</div>
+          </div>
+          <button class="switch on" id="set-vibrate" aria-label="vibration"></button>
+        </div>
+
+        <div class="section-title" style="margin-top:18px"><span class="dot"></span><span data-i18n="set.device">Device</span></div>
+        <div class="row row-stack">
+          <div>
+            <div class="lbl" data-i18n="set.device.label">Device profile</div>
+            <div class="sub" data-i18n="set.device.sub">Layout density for your screen</div>
+          </div>
+          <div class="device-grid compact" id="set-device-grid"></div>
+        </div>
+
+        <div class="section-title" style="margin-top:18px"><span class="dot"></span><span data-i18n="set.data">Data</span></div>
+        <div class="row">
+          <div>
+            <div class="lbl" data-i18n="set.reset">Reset progress</div>
+            <div class="sub" data-i18n="set.reset.sub">Clears local stats, achievements, profile</div>
+          </div>
+          <button class="btn btn-danger" id="btn-reset-all"><svg class="ic-svg"><use href="#i-reset"/></svg><span data-i18n="set.reset.btn">Reset</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TASKS SCREEN ============ -->
+    <section class="screen" data-screen="tasks">
+      <header class="screen-head">
+        <button class="btn-back" data-go="menu">
+          <svg class="ic-svg lg"><use href="#i-arrow-left"/></svg>
+          <span data-i18n="nav.menu">Menu</span>
+        </button>
+        <h2 class="screen-title"><svg class="ic-svg lg"><use href="#i-tasks"/></svg> <span data-i18n="tab.tasks">Tasks</span></h2>
+        <span class="chip mono" id="tasks-reset"></span>
+      </header>
+      <div class="scroll-body">
+        <div class="section-title"><span class="dot"></span><span data-i18n="tasks.daily">Daily tasks</span></div>
+        <div class="grid-3" id="tasks-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ STATS SCREEN ============ -->
+    <section class="screen" data-screen="stats">
+      <header class="screen-head">
+        <button class="btn-back" data-go="menu">
+          <svg class="ic-svg lg"><use href="#i-arrow-left"/></svg>
+          <span data-i18n="nav.menu">Menu</span>
+        </button>
+        <h2 class="screen-title"><svg class="ic-svg lg"><use href="#i-stats"/></svg> <span data-i18n="tab.stats">Stats</span></h2>
+        <span class="head-spacer"></span>
+      </header>
+      <div class="scroll-body">
+        <div class="section-title"><span class="dot"></span><span data-i18n="stats.overview">Overview</span></div>
+        <div class="grid-4">
+          <div class="stat"><div class="lbl" data-i18n="stats.games">Games played</div><div class="val mono" id="s-games">0</div></div>
+          <div class="stat"><div class="lbl" data-i18n="stats.best">Best score</div><div class="val mono" id="s-best">0</div></div>
+          <div class="stat"><div class="lbl" data-i18n="stats.avg">Avg score</div><div class="val mono" id="s-avg">0</div></div>
+          <div class="stat"><div class="lbl" data-i18n="stats.time">Total time</div><div class="val mono" id="s-time">0</div></div>
+          <div class="stat"><div class="lbl" data-i18n="stats.lines">Lines cleared</div><div class="val mono" id="s-lines">0</div></div>
+          <div class="stat"><div class="lbl" data-i18n="stats.combo">Best combo</div><div class="val mono" id="s-combo">x1</div></div>
+          <div class="stat"><div class="lbl" data-i18n="stats.bestRun">Best run</div><div class="val mono" id="s-run">0</div></div>
+          <div class="stat"><div class="lbl" data-i18n="stats.xp">Total XP</div><div class="val mono" id="s-xp">0</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROFILE SCREEN ============ -->
+    <section class="screen" data-screen="profile">
+      <header class="screen-head">
+        <button class="btn-back" data-go="menu">
+          <svg class="ic-svg lg"><use href="#i-arrow-left"/></svg>
+          <span data-i18n="nav.menu">Menu</span>
+        </button>
+        <h2 class="screen-title"><svg class="ic-svg lg"><use href="#i-profile"/></svg> <span data-i18n="tab.profile">Profile</span></h2>
+        <span class="head-spacer"></span>
+      </header>
+      <div class="scroll-body">
+        <div class="profile-card glass">
+          <div class="avatar" id="prof-avatar">P</div>
+          <div class="profile-meta">
+            <div class="nm" id="prof-name">Player</div>
+            <div class="id-row">
+              <button class="id mono id-badge" id="prof-id" type="button" title="Copy">ID • —</button>
+              <button class="btn btn-ghost btn-sm" id="prof-copy" type="button">
+                <svg class="ic-svg"><use href="#i-copy"/></svg>
+                <span data-i18n="profile.copy">Copy ID</span>
+              </button>
+            </div>
+            <div class="level-bar">
+              <div class="ft"><span><span data-i18n="profile.level">Level</span> <span id="prof-level">1</span></span><span id="prof-xp">0/100</span></div>
+              <div class="bar"><i id="prof-xp-bar" style="width:0%"></i></div>
+            </div>
+          </div>
+        </div>
+        <div class="grid-4" style="margin-top:14px">
+          <div class="stat"><div class="lbl" data-i18n="profile.best">High score</div><div class="val mono" id="p-best">0</div></div>
+          <div class="stat"><div class="lbl" data-i18n="profile.bestRun">Best run</div><div class="val mono" id="p-run">0</div></div>
+          <div class="stat"><div class="lbl" data-i18n="profile.games">Games</div><div class="val mono" id="p-games">0</div></div>
+          <div class="stat"><div class="lbl" data-i18n="profile.avg">Average</div><div class="val mono" id="p-avg">0</div></div>
+          <div class="stat"><div class="lbl" data-i18n="profile.reg">Registered</div><div class="val mono" style="font-size:16px" id="p-reg">—</div></div>
+          <div class="stat"><div class="lbl" data-i18n="profile.unlocked">Unlocked</div><div class="val mono" id="p-unlocked">0</div></div>
+          <div class="stat"><div class="lbl" data-i18n="profile.lines">Lines</div><div class="val mono" id="p-lines">0</div></div>
+          <div class="stat"><div class="lbl" data-i18n="profile.combo">Best combo</div><div class="val mono" id="p-combo">x1</div></div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-danger" id="btn-logout"><svg class="ic-svg"><use href="#i-logout"/></svg><span data-i18n="profile.logout">Sign out</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEADERBOARDS SCREEN ============ -->
+    <section class="screen" data-screen="leaderboards">
+      <header class="screen-head">
+        <button class="btn-back" data-go="menu">
+          <svg class="ic-svg lg"><use href="#i-arrow-left"/></svg>
+          <span data-i18n="nav.menu">Menu</span>
+        </button>
+        <h2 class="screen-title"><svg class="ic-svg lg"><use href="#i-trophy"/></svg> <span data-i18n="tab.leaderboards">Leaderboards</span></h2>
+        <span class="head-spacer"></span>
+      </header>
+      <div class="scroll-body">
+        <div class="section-title"><span class="dot"></span><span data-i18n="lb.world">World rankings</span> <span style="margin-left:auto;font-size:12px;color:var(--fg-mute)" data-i18n="lb.note">Simulated global pool · updates over time</span></div>
+        <div class="lb-table" id="lb-table"></div>
+      </div>
+    </section>
+
+    <!-- ============ ACHIEVEMENTS SCREEN ============ -->
+    <section class="screen" data-screen="achievements">
+      <header class="screen-head">
+        <button class="btn-back" data-go="menu">
+          <svg class="ic-svg lg"><use href="#i-arrow-left"/></svg>
+          <span data-i18n="nav.menu">Menu</span>
+        </button>
+        <h2 class="screen-title"><svg class="ic-svg lg"><use href="#i-medal"/></svg> <span data-i18n="tab.achievements">Achievements</span></h2>
+        <span class="chip mono"><span data-i18n="ach.progress">Progress</span> <b id="ach-progress">0/0</b></span>
+      </header>
+      <div class="scroll-body ach-body">
+        <div class="ach-toolbar">
+          <div class="input-row ach-search">
+            <svg class="ic-svg" style="color:var(--fg-dim)"><use href="#i-search"/></svg>
+            <input id="ach-search" type="text" placeholder="Search..." autocomplete="off" spellcheck="false">
+          </div>
+          <div class="seg" id="ach-filter">
+            <button data-val="all" class="on" data-i18n="ach.filter.all">All</button>
+            <button data-val="unlocked" data-i18n="ach.filter.unlocked">Unlocked</button>
+            <button data-val="locked" data-i18n="ach.filter.locked">Locked</button>
+          </div>
+        </div>
+        <div class="ach-grid" id="ach-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ SHOP SCREEN ============ -->
+    <section class="screen shop-screen" data-screen="shop">
+      <header class="screen-head shop-head">
+        <button class="btn-back" data-go="menu">
+          <svg class="ic-svg lg"><use href="#i-arrow-left"/></svg>
+          <span data-i18n="nav.menu">Menu</span>
+        </button>
+        <h2 class="screen-title">
+          <svg class="ic-svg lg"><use href="#i-shop"/></svg>
+          <span data-i18n="tab.shop">Shop</span>
+        </h2>
+        <div class="shop-head-coin">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" fill="url(#coin-grad)" stroke="rgba(255,180,84,.7)" stroke-width="1.2"/>
+            <text x="12" y="16" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="800" fill="#0b0f1a">H</text>
+          </svg>
+          <span class="mono" id="shop-head-amount">0</span>
+          <span class="coin-pill-unit">HEX</span>
+        </div>
+      </header>
+
+      <div class="shop-tabs" role="tablist">
+        <button class="shop-tab on" data-tab="skins" role="tab">
+          <svg class="ic-svg"><use href="#i-skin"/></svg>
+          <span data-i18n="shop.tab.skins">Skins</span>
+        </button>
+        <button class="shop-tab" data-tab="coins" role="tab">
+          <svg class="ic-svg"><use href="#i-coin"/></svg>
+          <span data-i18n="shop.tab.coins">HEX coins</span>
+        </button>
+        <button class="shop-tab" data-tab="boosts" role="tab">
+          <svg class="ic-svg"><use href="#i-bolt"/></svg>
+          <span data-i18n="shop.tab.boosts">Boosts</span>
+        </button>
+        <button class="shop-tab" data-tab="redeem" role="tab">
+          <svg class="ic-svg"><use href="#i-gift"/></svg>
+          <span data-i18n="shop.tab.redeem">Activate code</span>
+        </button>
+      </div>
+
+      <div class="scroll-body shop-body">
+        <div class="shop-pane" id="shop-pane-skins">
+          <div class="shop-pane-hint" data-i18n="shop.skins.hint">Pick a palette for every piece you'll drop.</div>
+          <div class="shop-grid" id="shop-skin-grid"></div>
+        </div>
+        <div class="shop-pane hidden" id="shop-pane-coins">
+          <div class="shop-pane-hint" data-i18n="shop.coins.hint">HEX coins unlock skins. Pay via Telegram, the admin will top you up.</div>
+          <div class="shop-grid coin-grid" id="shop-coin-grid"></div>
+        </div>
+        <div class="shop-pane hidden" id="shop-pane-boosts">
+          <div class="shop-pane-hint" data-i18n="shop.boosts.hint">One-shot power-ups you can fire from the booster bar above the board.</div>
+          <div class="shop-grid boost-grid" id="shop-boost-grid"></div>
+        </div>
+        <div class="shop-pane hidden" id="shop-pane-redeem">
+          <div class="shop-pane-hint" data-i18n="shop.redeem.hint">Paste an activation code received from the admin to credit HEX to your wallet.</div>
+          <div class="redeem-stats">
+            <div class="redeem-stat">
+              <div class="lbl" data-i18n="redeem.count.label">Codes activated</div>
+              <div class="val mono" id="redeem-count">0</div>
+            </div>
+            <div class="redeem-stat">
+              <div class="lbl" data-i18n="redeem.total.label">Total HEX received</div>
+              <div class="val mono" id="redeem-total">0</div>
+            </div>
+          </div>
+          <div class="redeem-card">
+            <div class="redeem-head">
+              <svg class="ic-svg lg"><use href="#i-gift"/></svg>
+              <b data-i18n="redeem.title">Activate code</b>
+            </div>
+            <p class="redeem-desc" data-i18n="redeem.desc">Paste a code from the admin to credit HEX to your account.</p>
+            <div class="redeem-row">
+              <input type="text" id="redeem-code-input" placeholder="HX2-XXXXXXXXXXXX-AMOUNT-USES-NONCE-SIG" autocomplete="off" spellcheck="false">
+              <button class="btn btn-primary" id="redeem-code-btn" data-i18n="redeem.apply">Activate</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TOURNAMENTS SCREEN ============
+         Admin-curated tournament list. Players see a read-only feed
+         with status badges (upcoming / live / ended); admin sees an
+         extra creation form with name, description, start, end, and
+         optional prize. State lives in the shared JSONBlob bin so
+         the list polls together with the leaderboard. -->
+    <section class="screen tour-screen" data-screen="tournaments">
+      <header class="screen-head">
+        <button class="btn-back" data-go="menu">
+          <svg class="ic-svg lg"><use href="#i-arrow-left"/></svg>
+          <span data-i18n="nav.menu">Menu</span>
+        </button>
+        <h2 class="screen-title">
+          <svg class="ic-svg lg"><use href="#i-trophy"/></svg>
+          <span data-i18n="tab.tournaments">Tournaments</span>
+        </h2>
+        <span class="head-spacer"></span>
+      </header>
+      <div class="scroll-body tour-body">
+        <!-- Admin-only creation form. Toggled visible via #tour-admin-form.hidden
+             in scripts/tournaments.js. -->
+        <div class="tour-admin-form hidden" id="tour-admin-form">
+          <div class="tour-admin-head">
+            <svg class="ic-svg lg" style="color:var(--accent)"><use href="#i-calendar"/></svg>
+            <b data-i18n="tour.admin.title">Schedule tournament</b>
+          </div>
+          <p class="tour-admin-hint" data-i18n="tour.admin.hint">Players see a read-only list with countdowns. Prize is informational — top up the winner via &quot;Send HEX by ID&quot;.</p>
+          <div class="tour-admin-grid">
+            <label class="tour-field">
+              <span data-i18n="tour.field.name">Tournament name</span>
+              <input type="text" id="tour-name" maxlength="80" placeholder="Friday rush" autocomplete="off" spellcheck="false">
+            </label>
+            <label class="tour-field tour-field-wide">
+              <span data-i18n="tour.field.desc">Description</span>
+              <textarea id="tour-desc" maxlength="500" rows="3" placeholder="Highest score wins · top 3 share the pot"></textarea>
+            </label>
+            <label class="tour-field">
+              <span data-i18n="tour.field.start">Start (date &amp; time)</span>
+              <input type="datetime-local" id="tour-start">
+            </label>
+            <label class="tour-field">
+              <span data-i18n="tour.field.end">End (date &amp; time)</span>
+              <input type="datetime-local" id="tour-end">
+            </label>
+            <label class="tour-field">
+              <span data-i18n="tour.field.prize">Prize (HEX, optional)</span>
+              <input type="number" id="tour-prize" min="0" step="1" placeholder="50000" autocomplete="off">
+            </label>
+          </div>
+          <div class="tour-admin-actions">
+            <button class="btn btn-primary" id="tour-create-btn">
+              <svg class="ic-svg"><use href="#i-calendar"/></svg>
+              <span data-i18n="tour.admin.create">Create tournament</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <span class="dot"></span>
+          <span data-i18n="tour.list.title">Tournaments</span>
+          <span style="margin-left:auto;font-size:12px;color:var(--fg-mute)" data-i18n="tour.list.note">Live · syncs every two minutes</span>
+        </div>
+        <div class="tour-list" id="tour-list"></div>
+      </div>
+    </section>
+
+    <!-- ============ ADMIN SCREEN ============ -->
+    <section class="screen admin-screen" data-screen="admin">
+      <header class="screen-head">
+        <button class="btn-back" data-go="menu">
+          <svg class="ic-svg lg"><use href="#i-arrow-left"/></svg>
+          <span data-i18n="nav.menu">Menu</span>
+        </button>
+        <h2 class="screen-title">
+          <svg class="ic-svg lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg>
+          <span data-i18n="menu.admin">Admin</span>
+        </h2>
+        <span class="head-spacer"></span>
+      </header>
+      <div class="scroll-body admin-body">
+        <div class="admin-stats">
+          <div class="admin-stat">
+            <div class="lbl" data-i18n="admin.codes.generated">Codes generated</div>
+            <div class="val mono" id="admin-stat-generated">0</div>
+          </div>
+          <div class="admin-stat">
+            <div class="lbl" data-i18n="admin.codes.activated">Codes activated</div>
+            <div class="val mono" id="admin-stat-activated">0</div>
+          </div>
+          <div class="admin-stat">
+            <div class="lbl" data-i18n="admin.hex.granted">HEX activated</div>
+            <div class="val mono" id="admin-stat-hex">0</div>
+          </div>
+        </div>
+        <div id="admin-screen-panel"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Drag layer -->
+  <div id="drag-layer"></div>
+
+  <!-- Modal: Game over -->
+  <div class="modal-back" id="modal-gameover">
+    <div class="modal glass">
+      <div style="display:grid;place-items:center;margin-bottom:8px">
+        <svg class="ic-svg xl" style="color:var(--accent)"><use href="#i-trophy"/></svg>
+      </div>
+      <h2 data-i18n="modal.gameover.title">Game Over</h2>
+      <p data-i18n="modal.gameover.desc">No more pieces can be placed.</p>
+      <div class="num" id="m-score">0</div>
+      <div style="color:var(--fg-dim);font-size:13px;margin-top:4px"><span data-i18n="modal.best">Best</span>: <span class="mono" id="m-best">0</span></div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="m-play-again"><svg class="ic-svg"><use href="#i-play"/></svg><span data-i18n="modal.again">Play again</span></button>
+        <button class="btn" id="m-menu"><svg class="ic-svg"><use href="#i-home"/></svg><span data-i18n="modal.menu">Back to menu</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Exit confirmation ("why are you leaving?") -->
+  <div class="modal-back" id="modal-exit">
+    <div class="modal glass exit-modal" role="dialog" aria-modal="true" aria-labelledby="exit-title">
+      <div class="exit-art" aria-hidden="true">
+        <svg viewBox="0 0 120 120" width="108" height="108"><use href="#art-farewell"/></svg>
+      </div>
+      <h2 id="exit-title" data-i18n="exit.title">Leaving already?</h2>
+      <p class="exit-sub" data-i18n="exit.sub">Pick what you'd like to do.</p>
+      <div class="exit-grid">
+        <button class="btn btn-primary exit-stay" id="exit-stay">
+          <svg class="ic-svg lg"><use href="#i-play"/></svg>
+          <span data-i18n="exit.stay">Keep playing</span>
+        </button>
+        <button class="btn exit-pause" id="exit-pause">
+          <svg class="ic-svg lg"><use href="#i-coffee"/></svg>
+          <span data-i18n="exit.pause">Take a break</span>
+        </button>
+        <button class="btn exit-signout" id="exit-signout">
+          <svg class="ic-svg lg"><use href="#i-logout"/></svg>
+          <span data-i18n="exit.signout">Sign out</span>
+        </button>
+        <button class="btn btn-danger exit-quit" id="exit-quit">
+          <svg class="ic-svg lg"><use href="#i-power"/></svg>
+          <span data-i18n="exit.quit">Quit</span>
+        </button>
+      </div>
+      <p class="exit-foot" data-i18n="exit.foot">Your progress is saved on this device.</p>
+    </div>
+  </div>
+
+  <!-- Modal: Shop purchase confirmation (HEX coin bundle -> Telegram) -->
+  <div class="modal-back" id="modal-shop-confirm">
+    <div class="modal glass shop-confirm" role="dialog" aria-modal="true" aria-labelledby="shop-confirm-title">
+      <div style="display:grid;place-items:center;margin-bottom:6px">
+        <svg class="ic-svg xl" style="color:var(--accent)"><use href="#i-tg"/></svg>
+      </div>
+      <h2 id="shop-confirm-title" data-i18n="shop.confirm.title">Confirm purchase</h2>
+      <p class="shop-confirm-line">
+        <span data-i18n="shop.confirm.amount">You're buying</span>
+        <b id="shop-confirm-amount">— HEX</b>
+      </p>
+      <p class="shop-confirm-line">
+        <span data-i18n="shop.confirm.id">Your HEXON ID</span>
+        <b class="mono" id="shop-confirm-id">—</b>
+      </p>
+      <p class="shop-confirm-foot" data-i18n="shop.confirm.foot">
+        After confirmation you'll be redirected to the admin in Telegram.
+        Coins are credited manually after payment.
+      </p>
+      <p class="shop-confirm-handle">
+        <svg class="ic-svg"><use href="#i-tg"/></svg>
+        <b class="mono" id="shop-confirm-handle">@PloxoyHard</b>
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="shop-confirm-yes">
+          <svg class="ic-svg"><use href="#i-tg"/></svg>
+          <span data-i18n="shop.confirm.yes">Open Telegram</span>
+        </button>
+        <button class="btn" id="shop-confirm-no" data-i18n="shop.confirm.no">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: What's new (changelog).
+       Body is populated by scripts/changelog.js. Each version section
+       fades in with a small stagger so the modal feels animated. -->
+  <div class="modal-back" id="modal-whatsnew">
+    <div class="modal glass whatsnew-modal" role="dialog" aria-modal="true" aria-labelledby="whatsnew-title">
+      <div class="whatsnew-head-row">
+        <div class="whatsnew-title-wrap">
+          <span class="whatsnew-title-icon"><svg class="ic-svg lg"><use href="#i-sparkle"/></svg></span>
+          <h2 id="whatsnew-title" data-i18n="whatsnew.title">What's new</h2>
+        </div>
+        <button class="btn btn-ghost icon-btn" id="whatsnew-close" aria-label="close">
+          <svg class="ic-svg"><use href="#i-x"/></svg>
+        </button>
+      </div>
+      <p class="whatsnew-sub" data-i18n="whatsnew.sub">Latest fixes, polish, and new features.</p>
+      <div class="whatsnew-body" id="whatsnew-body"></div>
+    </div>
+  </div>
+
+  <!-- Modal: How to play -->
+  <div class="modal-back" id="modal-howto">
+    <div class="modal glass" style="text-align:left">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h2 style="margin:0" data-i18n="howto.title">How to play</h2>
+        <button class="btn btn-ghost" id="howto-close"><svg class="ic-svg"><use href="#i-x"/></svg></button>
+      </div>
+      <ul style="padding-left:18px;color:var(--fg-dim);line-height:1.6;margin:0">
+        <li data-i18n="howto.1">Drag the three pieces onto the 10×10 board.</li>
+        <li data-i18n="howto.2">Fill full rows or columns to clear them.</li>
+        <li data-i18n="howto.3">Clear multiple lines in one move to chain combos.</li>
+        <li data-i18n="howto.4">Game ends when none of the three pieces fit.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+  <!-- Floating effects layer (score popups, particle bursts).
+       Always on top, never intercepts pointer events. -->
+  <div id="fx-layer" aria-hidden="true"></div>
+</div>
+
+<!-- ========= SCRIPTS ========= -->
+<script src="scripts/i18n.js"></script>
+<script src="scripts/storage.js"></script>
+<script src="scripts/state.js"></script>
+<script src="scripts/profile.js"></script>
+<script src="scripts/util.js"></script>
+<script src="scripts/effects.js"></script>
+<script src="scripts/skins.js"></script>
+<script src="scripts/wallet.js"></script>
+<script src="scripts/shop.js"></script>
+<script src="scripts/game.js"></script>
+<script src="scripts/boosts.js"></script>
+<script src="scripts/hud.js"></script>
+<script src="scripts/tasks.js"></script>
+<script src="scripts/achievements.js"></script>
+<script src="scripts/leaderboard.js"></script>
+<script src="scripts/activations.js"></script>
+<script src="scripts/tournaments.js"></script>
+<script src="scripts/changelog.js"></script>
+<script src="scripts/dropdown.js"></script>
+<script src="scripts/ui.js"></script>
+<script src="scripts/main.js"></script>
+
+</body>
+</html>

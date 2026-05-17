@@ -1,0 +1,213 @@
+/* ============================================================
+   HEXON BETA — What's new (changelog)
+   ============================================================
+   Pill button sits above the Play card on the menu screen and pulses
+   a small dot when there's a changelog entry the player hasn't seen.
+   Modal body is rendered by scripts/changelog.js — each version
+   section fades in with a small stagger.
+   ============================================================ */
+
+/* ---------- Pill button on the menu ---------- */
+.whatsnew-pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--card-strong);
+  color: var(--fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  width: 100%;
+  margin: 0 0 12px;
+  transition: transform .2s ease, border-color .2s ease, background .2s ease;
+  animation: whatsnewPillIn .45s ease-out both;
+}
+@keyframes whatsnewPillIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.whatsnew-pill:hover {
+  transform: translateY(-1px);
+  border-color: rgba(124, 92, 255, .55);
+}
+.whatsnew-pill-icon {
+  display: grid; place-items: center;
+  width: 36px; height: 36px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(124, 92, 255, .35), rgba(36, 189, 255, .25));
+  color: #e9ddff;
+  flex-shrink: 0;
+}
+.whatsnew-pill-icon .ic-svg { width: 18px; height: 18px; }
+.whatsnew-pill-text {
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 0; flex: 1 1 auto;
+}
+.whatsnew-pill-text b {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+.whatsnew-pill-sub {
+  font-size: 12px;
+  color: var(--fg-dim);
+  line-height: 1.4;
+}
+.whatsnew-pill-dot {
+  position: absolute;
+  top: 10px; right: 12px;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #ff5cb0;
+  box-shadow: 0 0 10px #ff5cb0;
+  animation: whatsnewDotPulse 1.6s ease-in-out infinite;
+}
+.whatsnew-pill-dot.hidden { display: none; }
+@keyframes whatsnewDotPulse {
+  0%, 100% { transform: scale(1);   opacity: 1;   }
+  50%      { transform: scale(1.5); opacity: .55; }
+}
+
+/* ---------- Modal ---------- */
+.whatsnew-modal {
+  max-width: 520px;
+  width: min(92vw, 520px);
+  text-align: left;
+  padding: 22px;
+}
+.whatsnew-head-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.whatsnew-title-wrap {
+  display: flex; align-items: center; gap: 10px;
+}
+.whatsnew-title-wrap h2 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -.01em;
+}
+.whatsnew-title-icon {
+  display: grid; place-items: center;
+  width: 38px; height: 38px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(124, 92, 255, .4), rgba(36, 189, 255, .25));
+  color: #e9ddff;
+}
+.whatsnew-sub {
+  margin: 0 0 14px;
+  color: var(--fg-dim);
+  font-size: 13px;
+}
+
+.whatsnew-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.whatsnew-section {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, .03);
+  border-radius: 14px;
+  padding: 14px;
+  opacity: 0;
+  animation: whatsnewSectionIn .45s ease-out both;
+}
+@keyframes whatsnewSectionIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.whatsnew-section.is-latest {
+  border-color: rgba(124, 92, 255, .45);
+  background: linear-gradient(135deg, rgba(124, 92, 255, .08), rgba(36, 189, 255, .04));
+}
+
+.whatsnew-head {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.whatsnew-version {
+  font-family: var(--font-mono, "JetBrains Mono", monospace);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(124, 92, 255, .18);
+  color: #c9b8ff;
+  border: 1px solid rgba(124, 92, 255, .35);
+  letter-spacing: .04em;
+}
+.whatsnew-tag {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--fg);
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.whatsnew-date {
+  font-size: 11px;
+  color: var(--fg-mute);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.whatsnew-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.whatsnew-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--fg-dim);
+  font-size: 13px;
+  line-height: 1.55;
+  opacity: 0;
+  animation: whatsnewItemIn .35s ease-out both;
+}
+@keyframes whatsnewItemIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.whatsnew-bullet {
+  width: 14px; height: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #b8a8ff;
+}
+
+/* Scrollbar polish — matches the rest of the app. */
+.whatsnew-body::-webkit-scrollbar { width: 6px; }
+.whatsnew-body::-webkit-scrollbar-track { background: transparent; }
+.whatsnew-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .12);
+  border-radius: 3px;
+}
+.whatsnew-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, .2);
+}
+
+/* Disable the staggered animations for reduced-motion users. */
+@media (prefers-reduced-motion: reduce) {
+  .whatsnew-pill,
+  .whatsnew-section,
+  .whatsnew-item { animation: none; opacity: 1; transform: none; }
+  .whatsnew-pill-dot { animation: none; }
+}

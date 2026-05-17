@@ -1,0 +1,674 @@
+/* ============================================================
+   HEXON BETA — Shop screen
+   ============================================================
+   Two tabs (Skins / HEX coins) with card grids. Cards animate in
+   with a small stagger when the screen becomes active.
+   ============================================================ */
+
+.shop-screen { display: none; }
+.shop-screen.active { display: flex; }
+.shop-screen .scroll-body.shop-body { padding: 18px 18px 28px; }
+
+.shop-head { gap: 12px; }
+.shop-head-coin {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 14px 7px 8px;
+  border-radius: 999px;
+  background: var(--card-strong);
+  border: 1px solid var(--border);
+  font-weight: 800;
+  font-size: 13px;
+}
+.shop-head-coin .coin-pill-unit {
+  font-size: 10px; color: var(--fg-dim); letter-spacing: .12em; text-transform: uppercase;
+}
+
+/* ---------- Tabs ---------- */
+.shop-tabs {
+  display: flex; align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  margin: 6px 0 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+  flex-shrink: 0;
+}
+.shop-tabs::-webkit-scrollbar { display: none; }
+.shop-tab {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px;
+  border-radius: 14px 14px 0 0;
+  background: rgba(255, 255, 255, .03);
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  color: var(--fg-dim);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background .25s ease, color .25s ease, transform .15s ease;
+}
+.shop-tab .ic-svg { width: 16px; height: 16px; }
+.shop-tab:hover { color: var(--fg); }
+.shop-tab.on {
+  background: var(--card-strong);
+  color: var(--fg);
+  position: relative;
+  transform: translateY(1px);
+}
+.shop-tab.on::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px;
+  height: 3px; border-radius: 3px;
+  background: linear-gradient(90deg, #7c5cff, #24bdff);
+}
+
+.shop-pane { animation: shopPaneIn .35s ease-out both; will-change: opacity, transform; }
+.shop-pane.hidden { display: none; }
+@keyframes shopPaneIn {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+.shop-pane-hint {
+  color: var(--fg-dim);
+  font-size: 12px;
+  margin: 0 0 14px;
+  line-height: 1.45;
+}
+
+/* ---------- Grid ---------- */
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+.shop-card {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
+    var(--card-strong);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 28px rgba(0,0,0,.30);
+  overflow: hidden;
+  animation: shopCardIn .35s ease-out both;
+  --card-accent: #7c5cff;
+}
+.shop-card::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(120% 60% at 50% -20%, color-mix(in srgb, var(--card-accent) 35%, transparent), transparent 60%);
+  opacity: .55;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+.shop-card:hover::before { opacity: .85; }
+.shop-card:hover { transform: translate3d(0, -2px, 0); border-color: color-mix(in srgb, var(--card-accent) 55%, var(--border)); }
+
+@keyframes shopCardIn {
+  from { opacity: 0; transform: translate3d(0, 10px, 0) scale(.98); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+.shop-card:nth-child(2)  { animation-delay: .03s; }
+.shop-card:nth-child(3)  { animation-delay: .06s; }
+.shop-card:nth-child(4)  { animation-delay: .09s; }
+.shop-card:nth-child(5)  { animation-delay: .12s; }
+.shop-card:nth-child(6)  { animation-delay: .15s; }
+.shop-card:nth-child(7)  { animation-delay: .18s; }
+.shop-card:nth-child(8)  { animation-delay: .21s; }
+.shop-card:nth-child(n+9){ animation-delay: .24s; }
+
+.shop-cta {
+  width: 100%; justify-content: center;
+  border-radius: 12px;
+  font-weight: 800;
+}
+.btn.btn-disabled {
+  background: rgba(255,255,255,.05);
+  color: var(--fg-dim);
+  cursor: not-allowed;
+}
+
+/* ---------- Skin cards ---------- */
+.skin-card.is-equipped {
+  border-color: rgba(61, 220, 151, .55);
+}
+.skin-card.is-equipped::after {
+  content: "★";
+  position: absolute; top: 10px; right: 12px;
+  color: #b8ffd6;
+  font-size: 14px;
+  font-weight: 800;
+}
+.skin-swatch {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+  width: 100%;
+  padding: 6px;
+  border-radius: 12px;
+  background: rgba(0,0,0,.25);
+}
+.skin-swatch-cell {
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 2px 4px rgba(0,0,0,.35);
+}
+.skin-name { font-weight: 800; font-size: 14px; letter-spacing: .01em; }
+
+/* The per-skin glyph rendered above the swatch. Each card pulls
+   its own SVG via skinIconSvg() in skins.js, so every skin gets a
+   visually distinct icon (lightning for neon, flame for ember, …). */
+.skin-icon {
+  --icon-size: 52px;
+  width: var(--icon-size); height: var(--icon-size);
+  display: grid; place-items: center;
+  border-radius: 14px;
+  background: radial-gradient(120% 120% at 30% 25%, rgba(255,255,255,.18), rgba(0,0,0,.30) 55%, rgba(0,0,0,.40));
+  border: 1px solid color-mix(in srgb, var(--card-accent) 35%, rgba(255,255,255,.15));
+  box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--card-accent) 55%, transparent);
+  margin: 0 auto 2px;
+}
+.skin-icon svg { width: 70%; height: 70%; display: block; }
+
+/* ---------- Coin bundle cards ---------- */
+.coin-card {
+  --card-accent: #ffb454;
+}
+.coin-card.popular   { --card-accent: #f472b6; }
+.coin-card.best-value{ --card-accent: #3ddc97; }
+.coin-card-stack {
+  width: 56px; height: 56px;
+  display: grid; place-items: center;
+  border-radius: 14px;
+  background: rgba(0,0,0,.30);
+}
+.coin-card-icon { width: 40px; height: 40px; }
+.coin-card-amount {
+  font-size: 13px;
+  color: var(--fg-dim);
+}
+.coin-card-amount b {
+  font-size: 19px;
+  color: var(--fg);
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+.coin-card-amount span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+.coin-card-ribbon {
+  position: absolute;
+  top: 10px; left: -28px;
+  transform: rotate(-30deg);
+  padding: 3px 36px;
+  background: linear-gradient(90deg, #ff9a3a, #ffd166);
+  color: #2a1a00;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: .04em;
+  box-shadow: 0 6px 14px rgba(0,0,0,.4);
+}
+
+/* ---------- Confirm modal ---------- */
+.shop-confirm { max-width: 420px; }
+.shop-confirm h2 { margin-bottom: 8px; }
+.shop-confirm-line {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin: 4px 0;
+  color: var(--fg-dim);
+  font-size: 13px;
+}
+.shop-confirm-line b { color: var(--fg); font-weight: 800; font-size: 14px; }
+.shop-confirm-foot {
+  color: var(--fg-dim);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 10px 0 0;
+}
+.shop-confirm-handle {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin: 10px 0 0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(36, 189, 255, .12);
+  border: 1px solid rgba(36, 189, 255, .35);
+}
+.shop-confirm-handle b { color: #b8e8ff; font-weight: 800; }
+
+/* ---------- Mobile ---------- */
+@media (max-width: 720px) {
+  .shop-tabs { padding: 0 12px; gap: 6px; }
+  .shop-tab { padding: 9px 14px; font-size: 12px; gap: 6px; }
+  .shop-screen .scroll-body.shop-body { padding: 14px 12px 24px; }
+  .shop-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .shop-card { padding: 12px; gap: 10px; border-radius: 14px; }
+  .skin-name { font-size: 13px; }
+  .coin-card-amount b { font-size: 16px; }
+}
+@media (max-width: 380px) {
+  .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ---------- Admin panel (nickname "admin") ---------- */
+.shop-admin-wrap { margin: 22px 0 8px; }
+.shop-admin-wrap.hidden { display: none; }
+.admin-card {
+  border-radius: 18px;
+  padding: 14px 16px 16px;
+  background: linear-gradient(180deg, rgba(255,180,84,.10), rgba(255,84,128,.10));
+  border: 1px solid rgba(255,150,84,.35);
+  box-shadow: 0 12px 28px -18px rgba(255,120,80,.55);
+}
+.admin-card-head {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px;
+}
+.admin-card-head svg { color: #ffba6b; }
+.admin-card-head b { color: #ffba6b; letter-spacing: .12em; font-size: 12px; }
+.admin-id {
+  margin-left: auto;
+  font-family: ui-monospace, "JetBrains Mono", monospace;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255,180,84,.12);
+  color: #ffd9b0;
+  border: 1px solid rgba(255,180,84,.30);
+}
+.admin-actions {
+  display: flex; flex-wrap: wrap; gap: 10px;
+}
+.admin-actions .btn-primary,
+.admin-actions .btn-ghost {
+  flex: 1 1 auto;
+  min-width: 140px;
+}
+
+/* ---------- Activation-code generator + redeem ---------- */
+.admin-gen {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(255,180,84,.30);
+}
+.admin-gen-head b { color: #ffba6b; letter-spacing: .04em; font-size: 13px; }
+.admin-gen-row {
+  display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;
+}
+.admin-gen-row input,
+.redeem-row input {
+  flex: 1 1 160px;
+  min-width: 120px;
+  background: rgba(0,0,0,.30);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #fff;
+  font: 600 13px/1.2 ui-monospace, "JetBrains Mono", monospace;
+}
+.admin-gen-row input:focus,
+.redeem-row input:focus {
+  border-color: rgba(124, 92, 255, 0.55);
+  outline: none;
+}
+.admin-gen-row .btn-primary,
+.admin-gen-row .btn-ghost { flex: 0 0 auto; min-width: 100px; }
+.admin-gen-out {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(0,0,0,.35);
+  border-radius: 10px;
+  font-size: 12px;
+  word-break: break-all;
+  color: #d6c89c;
+  min-height: 36px;
+}
+
+.redeem-card {
+  margin-top: 14px;
+  padding: 14px 16px 16px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(124, 92, 255, .10), rgba(64, 184, 255, .10));
+  border: 1px solid rgba(124, 92, 255, .35);
+}
+.redeem-head {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+}
+.redeem-head b { color: #bdb3ff; letter-spacing: .04em; font-size: 13px; }
+.redeem-head svg { color: #bdb3ff; }
+.redeem-desc {
+  margin: 0 0 12px; font-size: 12px; color: var(--fg-mute);
+}
+.redeem-row {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.redeem-row .btn-primary { flex: 0 0 auto; min-width: 120px; }
+
+/* ---------- Activate-code shop tab: counter row ---------- */
+.redeem-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 4px 0 14px;
+}
+.redeem-stat {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.redeem-stat .lbl {
+  font-size: 11px;
+  letter-spacing: .04em;
+  color: var(--fg-mute);
+  text-transform: uppercase;
+}
+.redeem-stat .val {
+  font: 700 18px/1.1 ui-monospace, "JetBrains Mono", monospace;
+  color: #bdb3ff;
+}
+
+/* ---------- Admin screen ---------- */
+.admin-screen .admin-body {
+  padding: 14px 16px 24px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.admin-stat {
+  background: linear-gradient(180deg, rgba(255,180,84,.10), rgba(255,84,128,.06));
+  border: 1px solid rgba(255,180,84,.30);
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.admin-stat .lbl {
+  font-size: 11px;
+  letter-spacing: .04em;
+  color: rgba(255, 217, 176, 0.85);
+  text-transform: uppercase;
+}
+.admin-stat .val {
+  font: 700 20px/1.1 ui-monospace, "JetBrains Mono", monospace;
+  color: #ffd9b0;
+}
+@media (max-width: 480px) {
+  .admin-stats { grid-template-columns: 1fr; }
+}
+
+/* ---------- Admin menu tile (accent flavour) ---------- */
+.menu-tile-admin {
+  background: linear-gradient(180deg, rgba(255,180,84,.16), rgba(255,84,128,.08)) !important;
+  border-color: rgba(255,180,84,.40) !important;
+  color: #ffd9b0 !important;
+}
+.menu-tile-admin .ic-svg { color: #ffba6b; }
+
+/* ---------- Admin screen v2: label-stacked generator + quick-picks ---------- */
+.admin-gen-field {
+  margin-top: 12px;
+}
+.admin-gen-field label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(255, 217, 176, 0.75);
+  margin-bottom: 6px;
+}
+.admin-quick-row {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 8px;
+}
+.admin-quick {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255,180,84,.10);
+  border: 1px solid rgba(255,180,84,.30);
+  color: #ffd9b0;
+  font: 700 12px/1 ui-monospace, "JetBrains Mono", monospace;
+  cursor: pointer;
+  transition: background .15s ease, transform .1s ease, border-color .15s ease;
+}
+.admin-quick:hover { background: rgba(255,180,84,.18); }
+.admin-quick.on {
+  background: linear-gradient(180deg, #ff9a3a, #ff6088);
+  color: #2a1100;
+  border-color: rgba(255,180,84,.0);
+}
+/* Max-uses chips: cooler tint so they don't blur into the amount row. */
+.admin-quick-uses {
+  background: rgba(124, 92, 255, .12);
+  border-color: rgba(124, 92, 255, .35);
+  color: #cdbfff;
+  min-width: 38px;
+  text-align: center;
+}
+.admin-quick-uses:hover { background: rgba(124, 92, 255, .22); }
+.admin-quick-uses.on {
+  background: linear-gradient(180deg, #7c5cff, #24bdff);
+  color: #06091a;
+  border-color: transparent;
+}
+.admin-gen-uses-hint {
+  flex: 0 0 auto;
+  align-self: center;
+  font-size: 11px;
+  color: var(--fg-mute);
+  letter-spacing: .04em;
+}
+.admin-history-uses {
+  font-size: 11px;
+  font-weight: 700;
+  color: #cdbfff;
+  background: rgba(124, 92, 255, .14);
+  border: 1px solid rgba(124, 92, 255, .30);
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.admin-reset {
+  color: #ffb6a8 !important;
+  border-color: rgba(255, 100, 84, .35) !important;
+}
+.admin-reset:hover { background: rgba(255, 100, 84, .10); }
+
+/* ---------- Admin recent-codes history ---------- */
+.admin-history {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(255,180,84,.30);
+}
+.admin-history-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-bottom: 8px;
+}
+.admin-history-head b {
+  color: #ffba6b;
+  font-size: 13px;
+  letter-spacing: .04em;
+}
+.admin-history-clear {
+  background: transparent;
+  border: 1px solid rgba(255, 100, 84, .35);
+  color: #ffb6a8;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .15s ease;
+}
+.admin-history-clear:hover { background: rgba(255, 100, 84, .10); }
+
+.admin-history-list {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.admin-history-empty {
+  padding: 10px 12px;
+  border: 1px dashed rgba(255,255,255,.10);
+  border-radius: 10px;
+  color: var(--fg-mute);
+  font-size: 12px;
+  text-align: center;
+}
+.admin-history-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  gap: 4px 10px;
+  align-items: center;
+  padding: 8px 10px;
+  background: rgba(0,0,0,.30);
+  border: 1px solid rgba(255,180,84,.20);
+  border-radius: 10px;
+}
+.admin-history-meta {
+  grid-column: 1 / 2;
+  display: flex; align-items: baseline; gap: 8px;
+  min-width: 0;
+}
+.admin-history-meta b {
+  font-size: 12px;
+  color: #ffd9b0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.admin-history-amt {
+  font-size: 11px;
+  color: #b8ffd6;
+  white-space: nowrap;
+}
+.admin-history-code {
+  grid-column: 1 / 2;
+  font-size: 11px;
+  color: #d6c89c;
+  cursor: pointer;
+  word-break: break-all;
+  user-select: all;
+}
+.admin-history-code:hover { color: #ffd9b0; }
+.admin-history-copy {
+  grid-column: 2 / 3;
+  grid-row: 1 / 3;
+  align-self: center;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: rgba(255,180,84,.10);
+  border: 1px solid rgba(255,180,84,.30);
+  color: #ffd9b0;
+  cursor: pointer;
+  font-size: 14px;
+  display: grid; place-items: center;
+  transition: background .15s ease;
+}
+.admin-history-copy:hover { background: rgba(255,180,84,.20); }
+
+@media (max-width: 480px) {
+  .admin-actions .btn-primary,
+  .admin-actions .btn-ghost { min-width: 0; flex: 1 1 calc(50% - 5px); }
+  .admin-quick { padding: 6px 10px; font-size: 11px; }
+}
+
+/* ============================================================
+   Rarity badges on skin cards
+   ============================================================
+   Painted from shop.js → paintSkinGrid(). Each card gets a
+   .rarity-* class plus a --rarity-color custom property. The
+   badge sits top-right; we also tint the card's border in the
+   tier's accent so high-rarity skins glow without being garish. */
+.skin-rarity-badge {
+  position: absolute;
+  top: 8px; right: 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #0b0f1a;
+  background: var(--rarity-color, #9aa0b8);
+  box-shadow: 0 2px 6px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.10) inset;
+  pointer-events: none;
+  z-index: 1;
+}
+/* Push the "★" equipped marker left so it doesn't collide with
+   the new badge. */
+.skin-card.is-equipped::after { right: auto; left: 12px; }
+/* Tier-specific card glows. Common is the baseline (no glow). */
+.skin-card.rarity-rare    { border-color: color-mix(in srgb, #24bdff 55%, var(--border)); }
+.skin-card.rarity-epic    {
+  border-color: color-mix(in srgb, #a766ff 60%, var(--border));
+  box-shadow: 0 10px 28px rgba(0,0,0,.30), 0 0 0 1px rgba(167,102,255,.20) inset;
+}
+.skin-card.rarity-legend  {
+  border-color: color-mix(in srgb, #ffb454 65%, var(--border));
+  box-shadow: 0 12px 32px -8px rgba(255,180,84,.35), 0 0 0 1px rgba(255,180,84,.25) inset;
+}
+.skin-card.rarity-legend .skin-rarity-badge {
+  background: linear-gradient(90deg, #ffd166, #ff9a3a);
+}
+.skin-card.rarity-mythic  {
+  border-color: color-mix(in srgb, #f25c8e 70%, var(--border));
+  box-shadow: 0 14px 36px -8px rgba(242,92,142,.45), 0 0 0 1px rgba(242,92,142,.30) inset;
+  background:
+    linear-gradient(180deg, rgba(242,92,142,.06), rgba(255,255,255,.01)),
+    var(--card-strong);
+}
+.skin-card.rarity-mythic .skin-rarity-badge {
+  background: linear-gradient(90deg, #f25c8e, #a766ff);
+  color: #fff;
+}
+
+/* ============================================================
+   Boost cards (shop tab "Бусти")
+   ============================================================ */
+.boost-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+.boost-card { gap: 8px; }
+.boost-icon {
+  --icon-size: 56px;
+  width: var(--icon-size); height: var(--icon-size);
+  display: grid; place-items: center;
+  border-radius: 16px;
+  background: radial-gradient(120% 120% at 30% 25%, rgba(255,255,255,.18), rgba(0,0,0,.30) 55%, rgba(0,0,0,.45));
+  border: 1px solid color-mix(in srgb, var(--card-accent) 45%, rgba(255,255,255,.15));
+  box-shadow: 0 8px 22px -10px color-mix(in srgb, var(--card-accent) 60%, transparent);
+  color: var(--card-accent);
+}
+.boost-icon .ic-svg { width: 60%; height: 60%; }
+.boost-name { font-weight: 800; font-size: 14px; letter-spacing: .01em; text-align: center; }
+.boost-desc {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--fg-dim);
+  text-align: center;
+  min-height: 32px;
+}
+.boost-have {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(0,0,0,.28);
+  border: 1px solid rgba(255,255,255,.06);
+  font-size: 11px;
+  color: var(--fg-dim);
+}
+.boost-have b {
+  font-size: 14px;
+  color: #fff;
+  font-weight: 800;
+  font-family: ui-monospace, "JetBrains Mono", monospace;
+}
+.boost-have-lbl {
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}

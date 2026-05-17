@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    HEXON adaptive icon foreground.
+
+    A glassy hexagonal frame holding three brightly coloured polyomino
+    cells stacked diagonally. The cells echo the in-game pieces: purple
+    (#7C5CFF), cyan (#24BDFF) and mint (#3DDC97). The frame uses a
+    purple→cyan stroke gradient with a softer inner stroke to fake a
+    bevel, and a subtle top-edge highlight gives it a 3D feel.
+
+    Everything is centred in the 66dp safe zone so launcher masks
+    (squircle, rounded square, circle) never clip the composition.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="108dp"
+        android:height="108dp"
+        android:viewportWidth="108"
+        android:viewportHeight="108">
+
+    <!-- ============= Outer glow halo (very faint, soft) ============= -->
+    <path
+        android:fillColor="#117C5CFF"
+        android:pathData="M54,18 L86,36 L86,72 L54,90 L22,72 L22,36 Z" />
+    <path
+        android:fillColor="#1124BDFF"
+        android:pathData="M54,21 L83,37 L83,71 L54,87 L25,71 L25,37 Z" />
+
+    <!-- ============= Main hex body (gradient fill) ============= -->
+    <path android:pathData="M54,25 L80,40 L80,68 L54,83 L28,68 L28,40 Z">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="28" android:startY="28"
+                android:endX="80"   android:endY="80">
+                <item android:offset="0.00" android:color="#FF2A2F66" />
+                <item android:offset="1.00" android:color="#FF14193B" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- ============= Bright hex outline stroke ============= -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeWidth="2.4"
+        android:pathData="M54,25 L80,40 L80,68 L54,83 L28,68 L28,40 Z">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:strokeColor">
+            <gradient
+                android:type="linear"
+                android:startX="28" android:startY="25"
+                android:endX="80"   android:endY="83">
+                <item android:offset="0.00" android:color="#FF7C5CFF" />
+                <item android:offset="1.00" android:color="#FF24BDFF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Soft inner highlight stroke (bevel) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#33FFFFFF"
+        android:strokeWidth="0.9"
+        android:pathData="M54,30 L75,42 L75,66 L54,78 L33,66 L33,42 Z" />
+
+    <!-- ============= 3 colourful tiles inside ============= -->
+    <!-- top-left purple tile -->
+    <path
+        android:pathData="M40,40 L52,40 L52,52 L40,52 Z">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="40" android:startY="40"
+                android:endX="52"   android:endY="52">
+                <item android:offset="0.00" android:color="#FFA98BFF" />
+                <item android:offset="1.00" android:color="#FF6B4CFF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="#33FFFFFF"
+        android:pathData="M40,40 L52,40 L52,42 L40,42 Z" />
+
+    <!-- top-right cyan tile -->
+    <path
+        android:pathData="M56,40 L68,40 L68,52 L56,52 Z">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="56" android:startY="40"
+                android:endX="68"   android:endY="52">
+                <item android:offset="0.00" android:color="#FF7CD9FF" />
+                <item android:offset="1.00" android:color="#FF1097D6" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="#33FFFFFF"
+        android:pathData="M56,40 L68,40 L68,42 L56,42 Z" />
+
+    <!-- bottom-centre mint tile -->
+    <path
+        android:pathData="M48,56 L60,56 L60,68 L48,68 Z">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="48" android:startY="56"
+                android:endX="60"   android:endY="68">
+                <item android:offset="0.00" android:color="#FF7CF1B8" />
+                <item android:offset="1.00" android:color="#FF13B374" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="#33FFFFFF"
+        android:pathData="M48,56 L60,56 L60,58 L48,58 Z" />
+
+    <!-- ============= Top glossy reflection on the hex ============= -->
+    <path android:pathData="M54,25 L80,40 L80,49 L54,38 L28,49 L28,40 Z">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="54" android:startY="25"
+                android:endX="54"   android:endY="49">
+                <item android:offset="0.00" android:color="#55FFFFFF" />
+                <item android:offset="1.00" android:color="#00FFFFFF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    HEXON splash background.
+
+    Shown by the system between launcher tap and WebView paint.
+    A layer-list lets us stack three passes:
+      1. A diagonal navy gradient (the brand "deep space" wash).
+      2. A soft purple→cyan radial glow centred behind the emblem.
+      3. The same hex+tiles emblem used by the adaptive icon and
+         the in-app boot splash, so the transition from system
+         splash → WebView boot splash feels seamless.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Base diagonal navy gradient. -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="135"
+                android:startColor="#FF07090F"
+                android:centerColor="#FF11173B"
+                android:endColor="#FF07090F" />
+        </shape>
+    </item>
+
+    <!-- Soft purple radial glow centred slightly above the emblem.
+         Sized large enough to bleed off the canvas edges and tint
+         the whole composition rather than form a hard halo. -->
+    <item>
+        <shape android:shape="oval">
+            <size android:width="900dp" android:height="900dp" />
+            <gradient
+                android:type="radial"
+                android:gradientRadius="450"
+                android:startColor="#557C5CFF"
+                android:centerColor="#1A24BDFF"
+                android:endColor="#0024BDFF" />
+        </shape>
+    </item>
+
+    <!-- The hex emblem itself, centred and clamped so it stays
+         visible on phones, foldables and tablets alike. The
+         actual artwork lives in ic_launcher_foreground.xml. -->
+    <item
+        android:gravity="center"
+        android:width="220dp"
+        android:height="220dp"
+        android:drawable="@drawable/ic_launcher_foreground" />
+
+</layer-list>

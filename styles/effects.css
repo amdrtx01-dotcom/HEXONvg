@@ -1,0 +1,221 @@
+/* ============================================================
+   HEXON BETA — animation & effects layer
+   Floating score popups, level-up bursts, screen transitions,
+   exit modal styling. Loaded after game.css so its keyframes
+   and overrides win.
+   ============================================================ */
+
+/* ---------- Floating effects layer ----------
+   Sits on top of everything; never intercepts pointer events. */
+#fx-layer {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* Score / line popup that floats up and fades. */
+.fx-popup {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: linear-gradient(135deg, #7c5cff, #24bdff);
+  box-shadow:
+    0 10px 30px rgba(124, 92, 255, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  animation: fx-popup-rise 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+.fx-popup.warn  { background: linear-gradient(135deg, #ff7a4f, #ffb454); }
+.fx-popup.combo { background: linear-gradient(135deg, #ff7a4f, #f25c8e); }
+.fx-popup.score { background: linear-gradient(135deg, #3ddc97, #24bdff); }
+@keyframes fx-popup-rise {
+  0%   { transform: translate(-50%, -40%) scale(0.6); opacity: 0; }
+  18%  { transform: translate(-50%, -55%) scale(1.08); opacity: 1; }
+  60%  { transform: translate(-50%, -90%) scale(1.00); opacity: 1; }
+  100% { transform: translate(-50%, -160%) scale(0.92); opacity: 0; }
+}
+
+/* Single particle in a burst (radial fly-out). */
+.fx-particle {
+  position: absolute;
+  width: 10px; height: 10px;
+  border-radius: 3px;
+  transform-origin: center;
+  animation: fx-particle-fly 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+@keyframes fx-particle-fly {
+  0%   { transform: translate(-50%, -50%) rotate(0) scale(0.4); opacity: 0; }
+  15%  { opacity: 1; }
+  100% {
+    transform:
+      translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px)))
+      rotate(var(--rot, 180deg)) scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* Screen-wide flash on big events. */
+.fx-flash {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.65), transparent 60%);
+  mix-blend-mode: screen;
+  animation: fx-flash 0.45s ease-out forwards;
+}
+@keyframes fx-flash {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ---------- Screen transition ----------
+   Slight slide+fade when switching screens (.screen.active). */
+.screen.active {
+  animation: screen-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes screen-in {
+  0%   { opacity: 0; transform: translateY(10px) scale(0.985); filter: blur(2px); }
+  100% { opacity: 1; transform: translateY(0)    scale(1);     filter: blur(0); }
+}
+
+/* ---------- Menu tile entry stagger ---------- */
+.menu-screen.active .menu-tile {
+  opacity: 0;
+  animation: tile-in 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.menu-screen.active .menu-tile:nth-child(1) { animation-delay: 0.05s; }
+.menu-screen.active .menu-tile:nth-child(2) { animation-delay: 0.10s; }
+.menu-screen.active .menu-tile:nth-child(3) { animation-delay: 0.15s; }
+.menu-screen.active .menu-tile:nth-child(4) { animation-delay: 0.20s; }
+.menu-screen.active .menu-tile:nth-child(5) { animation-delay: 0.25s; }
+.menu-screen.active .menu-tile:nth-child(6) { animation-delay: 0.30s; }
+.menu-screen.active .menu-tile:nth-child(7) { animation-delay: 0.35s; }
+@keyframes tile-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* The big "Play" card gets a softer, slower entrance. */
+.menu-screen.active .play-card {
+  animation: play-card-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.04s;
+}
+@keyframes play-card-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------- Subtle attention pulse on hovered Play card ---------- */
+.play-card { position: relative; }
+.play-card::before {
+  content: "";
+  position: absolute; inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(124, 92, 255, 0.0), rgba(36, 189, 255, 0.0));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  filter: blur(18px);
+}
+.play-card:hover::before { opacity: 1; background: linear-gradient(135deg, rgba(124,92,255,0.55), rgba(36,189,255,0.55)); }
+
+/* ---------- Exit modal ---------- */
+.exit-modal {
+  text-align: center;
+  max-width: 460px;
+  padding: 22px 22px 18px;
+}
+.exit-art {
+  display: grid; place-items: center;
+  margin: -4px auto 4px;
+  animation: exit-art-bob 3.6s ease-in-out infinite;
+}
+.exit-art svg { filter: drop-shadow(0 12px 22px rgba(124, 92, 255, 0.35)); }
+@keyframes exit-art-bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-4px) rotate(2deg); }
+}
+.exit-modal h2 {
+  margin: 6px 0 4px;
+  font-size: 22px; font-weight: 800;
+  letter-spacing: 0.01em;
+}
+.exit-sub {
+  color: var(--fg-dim);
+  font-size: 13px;
+  margin: 0 0 14px;
+}
+.exit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.exit-grid .btn {
+  justify-content: center;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.exit-stay { grid-column: 1 / -1; }
+.btn-danger {
+  background: linear-gradient(135deg, #ff5a5a, #d94343);
+  color: #fff;
+  border: 0;
+  box-shadow: 0 10px 24px rgba(255, 90, 90, 0.35);
+}
+.btn-danger:hover { filter: brightness(1.05); }
+.exit-foot {
+  color: var(--fg-mute);
+  font-size: 11px;
+  margin: 4px 0 0;
+  letter-spacing: 0.02em;
+}
+.menu-tile-exit {
+  background: linear-gradient(135deg, rgba(255, 90, 90, 0.08), rgba(255, 90, 90, 0.02));
+  border-color: rgba(255, 90, 90, 0.25);
+}
+.menu-tile-exit svg { color: #ff7a7a; }
+.menu-tile-exit:hover {
+  background: linear-gradient(135deg, rgba(255, 90, 90, 0.16), rgba(255, 90, 90, 0.06));
+  border-color: rgba(255, 90, 90, 0.40);
+}
+
+/* Modal back fades in a bit more pleasantly. */
+.modal-back.active {
+  animation: modal-back-in 0.18s ease-out both;
+}
+.modal-back.active > .modal {
+  animation: modal-pop-in 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes modal-back-in {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to   { opacity: 1; backdrop-filter: blur(8px); }
+}
+@keyframes modal-pop-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Reduced-motion users get static UI. */
+@media (prefers-reduced-motion: reduce) {
+  .screen.active,
+  .menu-screen.active .menu-tile,
+  .menu-screen.active .play-card,
+  .modal-back.active,
+  .modal-back.active > .modal,
+  .fx-popup,
+  .fx-particle,
+  .fx-flash,
+  .exit-art {
+    animation: none !important;
+  }
+}

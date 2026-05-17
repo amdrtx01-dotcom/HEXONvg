@@ -1,0 +1,294 @@
+/* ============================================================
+   HEXON BETA — layout
+   app shell, login screen, screen frame & header, scroll body
+   ============================================================ */
+
+#app-root {
+  position: fixed; inset: 0;
+  /* Use the dynamic viewport so mobile address-bar collapse doesn't
+     suddenly steal 56px of vertical space mid-game. Falls back to
+     normal 100vh on browsers that don't support dvh yet. */
+  height: 100vh;
+  height: 100dvh;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---------- Login ----------
+   The login wrap is the only screen rendered before the app shell is
+   built, so it has to fit anywhere on its own. We scroll the *wrap*
+   (not the card) and pin the card with `align-items:start` so tall
+   cards on short viewports never get visually cropped off the top. */
+.login-wrap {
+  position: absolute; inset: 0;
+  display: flex; align-items: flex-start; justify-content: center;
+  overflow-y: auto;
+  padding:
+    calc(24px + env(safe-area-inset-top))
+    calc(20px + env(safe-area-inset-right))
+    calc(24px + env(safe-area-inset-bottom))
+    calc(20px + env(safe-area-inset-left));
+}
+.login-card {
+  width: min(440px, 100%);
+  margin: auto 0;
+  padding: clamp(20px, 4.5vw, 32px) clamp(18px, 4vw, 28px);
+  box-sizing: border-box;
+}
+.login-logo {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: clamp(14px, 3vw, 20px);
+  flex-wrap: wrap;
+}
+.logo-mark {
+  width: 48px; height: 48px; border-radius: 14px;
+  background: var(--accent-grad);
+  display: grid; place-items: center;
+  flex: 0 0 auto;
+  box-shadow: 0 12px 28px rgba(124, 92, 255, 0.5);
+}
+.logo-title { font-weight: 800; font-size: clamp(18px, 4.5vw, 22px); letter-spacing: 0.02em; }
+.logo-sub   { font-size: 12px; color: var(--fg-dim); letter-spacing: 0.18em; text-transform: uppercase; }
+.login-h    { font-size: clamp(20px, 5.5vw, 24px); font-weight: 800; margin: 8px 0 4px; }
+.login-p    { color: var(--fg-dim); margin: 0 0 16px; font-size: clamp(13px, 3.4vw, 14px); }
+
+.input-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--card-strong);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 4px 10px 4px 14px;
+  min-width: 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.input-row:focus-within {
+  border-color: rgba(124, 92, 255, 0.55);
+  box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.15);
+}
+.input-row input {
+  flex: 1 1 0; min-width: 0;
+  background: transparent; border: 0; outline: 0;
+  padding: 14px 4px; font-size: 16px; font-weight: 600;
+}
+.input-row .hint { color: var(--fg-mute); font-size: 12px; flex: 0 0 auto; }
+.input-row + .input-row { margin-top: 10px; }
+.login-actions { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+.login-error {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 80, 100, 0.12);
+  border: 1px solid rgba(255, 80, 100, 0.35);
+  color: #ff8d9b;
+  font-size: 13px;
+  font-weight: 600;
+}
+.login-perm {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(124, 92, 255, 0.10);
+  border: 1px solid rgba(124, 92, 255, 0.35);
+}
+.login-perm p { margin: 0 0 8px; font-size: 13px; color: var(--fg-mute); line-height: 1.4; }
+
+.login-footer {
+  margin-top: 20px;
+  display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap;
+  color: var(--fg-mute); font-size: 12px;
+}
+.login-footer > span:first-child { display: inline-flex; align-items: center; gap: 6px; }
+.login-footer .dropdown { flex: 0 1 auto; min-width: 0; }
+
+/* Narrow phones — the login card was the user-visible regression on
+   the screenshot they sent. Trim padding/gaps so everything fits a
+   320px viewport without any horizontal scroll. */
+@media (max-width: 480px) {
+  .login-wrap { padding-left: 12px; padding-right: 12px; }
+  .login-card { padding: 18px 16px; border-radius: 18px; }
+  .login-logo { gap: 10px; margin-bottom: 12px; }
+  .input-row { padding: 2px 8px 2px 12px; }
+  .input-row input { padding: 12px 2px; font-size: 15px; }
+  .input-row .hint { font-size: 11px; }
+  .login-actions .btn { flex: 1 1 100%; }
+}
+@media (max-width: 360px) {
+  .login-logo .logo-mark { width: 40px; height: 40px; border-radius: 12px; }
+  .login-h { font-size: 18px; }
+  .login-p { font-size: 12px; margin-bottom: 12px; }
+  .login-footer { font-size: 11px; }
+}
+/* Phones in landscape: shrink vertical breathing room so the device
+   picker + 2 inputs + confirm button all fit above the fold. */
+@media (max-height: 560px) and (orientation: landscape) {
+  .login-card { padding: 14px 18px; }
+  .login-logo { margin-bottom: 8px; }
+  .login-h { margin: 2px 0; font-size: 18px; }
+  .login-p { margin-bottom: 10px; }
+  .input-row input { padding: 10px 2px; }
+  .login-actions { margin-top: 10px; }
+}
+
+/* ============================================================
+   App shell + screens
+   The app fills the viewport. Only ONE screen is .active at a
+   time, and each screen is a flex column that fits 100% of the
+   app container. Internal scrolling lives inside .scroll-body
+   so the screen frame itself never scrolls.
+   ============================================================ */
+
+#app {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column;
+}
+
+.screen {
+  display: none;
+  flex: 1; min-height: 0;
+  flex-direction: column;
+  animation: fadeIn 0.25s ease;
+}
+.screen.active { display: flex; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Screen header ---------- */
+.screen-head {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  z-index: 5;
+}
+.screen-head::before {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(600px 100px at 30% 0%, rgba(124, 92, 255, 0.10), transparent 70%),
+    radial-gradient(500px 100px at 70% 100%, rgba(36, 189, 255, 0.08), transparent 70%);
+  pointer-events: none;
+}
+.screen-head::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+  pointer-events: none;
+}
+html[data-theme="light"] .screen-head {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.5));
+}
+
+.screen-title {
+  margin: 0; font-size: 16px; font-weight: 800;
+  display: inline-flex; align-items: center; gap: 10px;
+  color: var(--fg); flex: 1; min-width: 0;
+  letter-spacing: 0.01em;
+}
+.screen-title svg { color: var(--accent); }
+
+.btn-back {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 14px; border-radius: 12px;
+  background: var(--card-strong); border: 1px solid var(--border);
+  color: var(--fg); font-weight: 700; font-size: 13px;
+  flex: 0 0 auto;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+.btn-back:hover { background: var(--card-hi); border-color: var(--border-strong); }
+.btn-back:active { transform: translateY(1px); }
+
+.head-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.icon-btn {
+  padding: 9px 11px; border-radius: 12px;
+  background: var(--card-strong); border: 1px solid var(--border);
+  color: var(--fg);
+}
+.icon-btn:hover { background: var(--card-hi); border-color: var(--border-strong); }
+.head-spacer { flex: 0 0 auto; width: 80px; }
+
+/* ---------- Scroll body for list-style screens ---------- */
+.scroll-body {
+  flex: 1; min-height: 0; overflow: auto;
+  padding: 20px;
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+}
+.scroll-body::-webkit-scrollbar { width: 8px; height: 8px; }
+.scroll-body::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; }
+
+/* ---------- Grid utilities ---------- */
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 720px) {
+  .grid-3, .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ---------- Mobile tweaks ---------- */
+@media (max-width: 760px) {
+  .screen-head { padding: 10px 12px; gap: 8px; }
+  .scroll-body { padding: 14px; }
+  .head-spacer { display: none; }
+}
+@media (max-width: 480px) {
+  .btn-back span { display: none; }
+  .btn-back { padding: 9px 11px; }
+}
+
+/* ============================================================
+   Device-profile tweaks
+   The user (or auto-detection) picks one of pc / laptop / tablet
+   / phone. The chosen profile is reflected as html[data-device="..."]
+   which lets us nudge spacing, font sizes and density without
+   relying on viewport width.
+
+   - pc: roomy, biggest type, supports wide play+side layout
+   - laptop: slightly tighter than pc
+   - tablet: friendlier targets, single-column game body
+   - phone: most compact, smaller chips, hides the side column
+   ============================================================ */
+html[data-device="pc"] { font-size: 16px; }
+html[data-device="pc"] .scroll-body { padding: 24px; }
+html[data-device="pc"] .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+html[data-device="pc"] .menu-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+html[data-device="laptop"] { font-size: 15px; }
+html[data-device="laptop"] .scroll-body { padding: 18px; }
+
+html[data-device="tablet"] { font-size: 15px; }
+html[data-device="tablet"] .scroll-body { padding: 16px; }
+html[data-device="tablet"] .grid-4 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+html[data-device="tablet"] .menu-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+html[data-device="tablet"] .game-body {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr auto;
+}
+html[data-device="tablet"] .side-col { flex-direction: row; overflow: auto; }
+html[data-device="tablet"] .side-tasks-card { display: none; }
+html[data-device="tablet"] .btn { padding: 13px 18px; }
+
+html[data-device="phone"] { font-size: 14px; }
+html[data-device="phone"] .scroll-body { padding: 12px; }
+html[data-device="phone"] .grid-3,
+html[data-device="phone"] .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html[data-device="phone"] .menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html[data-device="phone"] .screen-head { padding: 10px 12px; gap: 8px; }
+html[data-device="phone"] .head-spacer { display: none; }
+html[data-device="phone"] .game-body {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr auto;
+  padding: 10px;
+  gap: 10px;
+}
+html[data-device="phone"] .side-col { flex-direction: row; overflow: auto; }
+html[data-device="phone"] .side-tasks-card { display: none; }
+html[data-device="phone"] .hud-strip .chip { padding: 6px 10px; font-size: 11px; }
+html[data-device="phone"] .user-pill .meta { display: none; }
+html[data-device="phone"] .play-card-text .big { font-size: 22px; }
+
+/* RTL adjustments (currently used by Arabic). Mirror back buttons
+   and other directional icons so the layout reads correctly. */
+html[dir="rtl"] .btn-back .ic-svg { transform: scaleX(-1); }
+html[dir="rtl"] .dropdown__menu { right: auto; left: 0; }
